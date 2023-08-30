@@ -1,0 +1,37 @@
+﻿@using ServiceEngine.Core;
+
+@*HideDefaultHeader*@
+
+<MDataTable Headers="Hheaders"
+    Items="HItems"
+    TItem="SysOrg"
+    ItemKey="r=>r.Name"
+    HideDefaultFooter
+    Class="elevation-1"
+    Style="width: 100%;background-color:antiquewhite;"
+    SingleExpand="_singleExpand"
+    ShowExpand
+    >
+    <ItemColContent>
+        @switch (context.Header.Value)
+        {
+            case "Action":
+                <MIcon Small
+                        Class="mr-2">mdi-pencil</MIcon>
+                <MIcon Small>mdi-delete</MIcon>
+                break;
+            default:
+                @context.Value
+                break;
+        }
+    </ItemColContent>
+    <ExpandedItemContent>
+        <td colspan="@Hheaders.Count" style="margin:0;padding:0;">
+            <MSysOrgDataTable Hheaders="Hheaders"
+                                HItems="@context.Item.Children">
+            </MSysOrgDataTable>
+        </td>
+    </ExpandedItemContent>
+</MDataTable>
+  
+

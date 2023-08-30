@@ -1,0 +1,91 @@
+﻿@page "/platform/menu"
+@using ServiceEngine.Core;
+@using ServiceEngineMasaCore.Blazor.Pages.Components
+@attribute [Authorize]
+@inherits ProComponentBase
+@inject GlobalConfig _GlobalConfig
+
+<MCard Tile="@(_GlobalConfig.NavigationStyle != NavigationStyles.Rounded)">
+    <MRow NoGutters>
+        <MCol Md="12">
+            <MRow>
+                <MCol Align="@AlignTypes.Center" class="ml-4">
+                    @*<PBlockText Primary="账号:"></PBlockText>*@
+                    <MTextField TValue="string" Label="@T("Menu Name")"></MTextField>
+                </MCol>
+                <MCol Align="@AlignTypes.Center">
+                    @*<PBlockText Primary="手机号码:"></PBlockText>*@
+                    <MTextField TValue="string" Label="@T("Type")"></MTextField>
+                </MCol>
+                <MCol Align="@AlignTypes.Center">
+                    <MButton Depressed>@T("Reset")</MButton>
+                    <MButton Depressed>@T("Add")</MButton>
+                    <MButton Depressed>@T("Query")</MButton>
+                </MCol>
+            </MRow>
+            <MRow>
+                <MCol Cols="12">
+                    <MDataTable 
+                        Headers="_headers" 
+                        Items="_sysMenuList"
+                        ItemKey="r=>r.Name"
+                        TItem="SysMenu" 
+                        HideDefaultFooter 
+                        Class="elevation-1" 
+                        Style="width: 100%;" 
+                        Loading="_isLoading"
+                        SingleExpand="_singleExpand"
+                        ShowExpand>
+                        <HeaderColContent Context="header">
+                            <span class="text-subtitle">@header.Text</span>
+                        </HeaderColContent>
+                        <ItemColContent>
+                            @switch (context.Header.Value)
+                            {
+                                case nameof(SysMenu.Type):
+                                    var type = context.Item.Type.GetDescription();
+                                    IEnumerable<BlockTextTag> tags = new List<BlockTextTag>()
+                                    {
+                                        new(type, "orange",true)
+                                    };
+                                    <PBlockText Tags="@tags" class="custom-pblocktext"></PBlockText>
+                                    break;
+                                case nameof(SysMenu.Status):
+                                    var Status = false;
+                                    if (context.Item.Status == StatusEnum.Enable)
+                                    {
+                                        Status = true;
+                                    }
+                                    <MSwitch Style="padding:0px;margin:0px;" @bind-Value="Status" Inset></MSwitch>
+                                    break;
+                                case "Action":
+                                    <MIcon Small
+                                           Class="mr-2">mdi-pencil</MIcon>
+                                    <MIcon Small>mdi-delete</MIcon>
+                                    break;
+                                default:
+                                    @context.Value
+                                    break;
+                            }
+                        </ItemColContent>
+                         <ExpandedItemContent>
+                            <td colspan="@_headers.Count" style="margin:0;padding:0;">
+                                <MSysMenuDataTable Hheaders="_headers"
+                                                    HItems="@context.Item.Children">
+                                </MSysMenuDataTable>
+                            </td>
+                        </ExpandedItemContent>
+                    </MDataTable>
+                </MCol>
+            </MRow>
+        </MCol>
+    </MRow>
+</MCard>
+
+<style>
+    .custom-pblocktext span {
+        padding: 4px !important;
+        height: 26px !important;
+        font-size: 16px !important;
+    }
+</style>

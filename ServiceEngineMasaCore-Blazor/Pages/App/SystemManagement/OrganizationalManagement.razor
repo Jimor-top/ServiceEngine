@@ -1,0 +1,137 @@
+﻿@page "/system/org"
+@using ServiceEngine.Core;
+@using ServiceEngineMasaCore.Blazor.Pages.Components
+@attribute [Authorize]
+@inherits ProComponentBase
+@inject GlobalConfig _GlobalConfig
+
+
+<MRow NoGutters>
+    <MCol Md="12">
+        <MCard Tile="@(_GlobalConfig.NavigationStyle != NavigationStyles.Rounded)">
+            <MRow Justify="JustifyTypes.SpaceBetween">
+                <MCol Cols="2">
+                    <MTreeview Active="_active"
+                               Items="_sysOrgList"
+                               OnActiveUpdate="(List<SysOrg> e)=>ActiveUpdated(e)"
+                               Activatable
+                               OpenOnClick
+                               ItemText="r=>r.Name"
+                               ItemKey="r=>r.Id"
+                               ItemChildren="r=>r.Children">
+                        <PrependContent>
+                            @if (context.Item.Children == null)
+                            {
+                                <MIcon>
+                                    mdi-account
+                                </MIcon>
+                            }
+                        </PrependContent>
+                        <LabelContent>
+                            <div class="d-flex justify-space-between align-center">
+                                <span>@context.Item.Name</span>
+                                <MMenu Right Bottom class="mr-2">
+                                    <ActivatorContent Context="activatorContext">
+                                        <MButton Icon @attributes="@activatorContext.Attrs">
+                                            <MIcon Small>mdi mdi-dots-vertical</MIcon>
+                                        </MButton>
+                                    </ActivatorContent>
+                                    <ChildContent>
+                                        <MList>
+                                            <MListItem OnClick="()=>OpenAddDialog(context.Item.Id,context.Item.Name)">
+                                                <MIcon Small>mdi-plus-circle-outline</MIcon>
+                                                <MListItemTitle Class="ml-2"> @T("AddSubordinate") </MListItemTitle>
+                                            </MListItem>
+                                            <MListItem>
+                                                <MIcon Small>mdi-pencil-outline</MIcon>
+                                                <MListItemTitle Class="ml-2"> @T("Edit") </MListItemTitle>
+                                            </MListItem>
+                                            <MListItem>
+                                                <MIcon Small>mdi-trash-can-outline</MIcon>
+                                                <MListItemTitle Class="ml-2"> @T("Delete") </MListItemTitle>
+                                            </MListItem>
+                                        </MList>
+                                    </ChildContent>
+                                </MMenu>
+                            </div>
+                        </LabelContent>
+                    </MTreeview>
+                </MCol>
+                <MDivider Vertical></MDivider>
+                <MCol Cols="10">
+                    <MRow>
+                        <MRow>
+                            <MCol Align="@AlignTypes.Center" class="ml-4">
+                                @*<PBlockText Primary="账号:"></PBlockText>*@
+                                <MTextField TValue="string" Label="@T("Account")"></MTextField>
+                            </MCol>
+                            <MCol Align="@AlignTypes.Center">
+                                @*<PBlockText Primary="手机号码:"></PBlockText>*@
+                                <MTextField TValue="string" Label="@T("Phone")"></MTextField>
+                            </MCol>
+                            <MCol Align="@AlignTypes.Center">
+                                <MButton Depressed>@T("Reset")</MButton>
+                                <MButton Depressed>@T("Add")</MButton>
+                                <MButton Depressed>@T("Query")</MButton>
+                            </MCol>
+                        </MRow>
+                    </MRow>
+                    <MRow>
+                        <MCol Cols="12">
+                            <MDataTable Headers="_headers"
+                                Items="_sysOrgList" 
+                                TItem="SysOrg" 
+                                ItemKey="r=>r.Name" 
+                                HideDefaultFooter
+                                Class="elevation-1" 
+                                Style="width: 100%;" 
+                                SingleExpand="_singleExpand"
+                                ShowExpand
+                                >
+                                <HeaderColContent Context="header">
+                                    <span class="text-subtitle">@header.Text</span>
+                                </HeaderColContent>
+                                <ItemColContent>
+                                    @switch (context.Header.Value)
+                                    {
+                                        case "Action":
+                                            <MIcon Small
+                                                   Class="mr-2">mdi-pencil</MIcon>
+                                            <MIcon Small>mdi-delete</MIcon>
+                                            break;
+                                        default:
+                                            @context.Value
+                                            break;
+                                    }
+                                </ItemColContent>
+                                <ExpandedItemContent>
+                                    <td colspan="@_headers.Count" style="margin:0;padding:0;">
+                                        <MSysOrgDataTable Hheaders="_headers"
+                                                            HItems="@context.Item.Children">
+                                        </MSysOrgDataTable>
+                                    </td>
+                                </ExpandedItemContent>
+                            </MDataTable>
+                        </MCol>
+                    </MRow>
+                </MCol>
+            </MRow>
+        </MCard>
+    </MCol>
+</MRow>
+@code {
+
+}
+<style>
+    .centered-content {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .custom-switch {
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+    }
+</style>

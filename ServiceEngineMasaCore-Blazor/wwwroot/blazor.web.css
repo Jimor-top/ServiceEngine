@@ -1,0 +1,318 @@
+﻿#blazor-error-ui {
+    background: lightyellow;
+    bottom: 0;
+    box-shadow: 0 -1px 2px rgba(0, 0, 0, 0.2);
+    display: none;
+    left: 0;
+    padding: 0.6rem 1.25rem 0.7rem 1.25rem;
+    position: fixed;
+    width: 100%;
+    z-index: 1080;
+}
+    #blazor-error-ui .dismiss {
+        cursor: pointer;
+        position: absolute;
+        right: 0.75rem;
+        top: 0.5rem;
+    }
+
+@keyframes k-flower {
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(-360deg);
+    }
+    0%, 100% {
+        box-shadow: 1px 1px 25px 10px rgba(146, 148, 248, 0.4);
+    }
+    50% {
+        box-shadow: none;
+    }
+}
+#blazor-loader-ui {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #f8f9fa;
+    transition: opacity .5s linear;
+    z-index: 2050;
+    display: flex;
+    flex-flow: column;
+}
+    #blazor-loader-ui .flower {
+        width: 200px;
+        height: 200px;
+        position: relative;
+        margin: 0 auto;
+        animation: k-flower 5s linear infinite;
+        -moz-animation: k-flower 5s linear infinite;
+        -webkit-animation: k-flower 5s linear infinite;
+        -o-animation: k-flower 5s linear infinite;
+    }
+
+@keyframes k-intro {
+    0%, 100% {
+        box-shadow: 0px 0px 25px 10px rgba(146, 148, 248, 0.4);
+    }
+
+    40%, 60% {
+        box-shadow: 0px 0px 25px 0px rgba(146, 148, 248, 0.4);
+    }
+}
+@keyframes k-title {
+    0%, 100% {
+        color: #fff;
+    }
+
+    60% {
+        color: #000000;
+    }
+}
+@keyframes k-flash {
+    0%, 100% {
+    }
+
+    10%, 90% {
+        left: 100%;
+    }
+}
+#blazor-loader-ui .intro {
+    width: 450px;
+    color: #fff;
+    font-size: 1.5rem;
+    text-align: center;
+    margin: 3rem auto;
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    padding: 0.5rem 1rem;
+    position: relative;
+    overflow: hidden;
+    border: 1px solid rgb(146, 148, 248);
+    animation: k-intro 3s linear infinite
+}
+#blazor-loader-ui .intro:before {
+    content: """";
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient( 120deg, transparent, rgba(146, 148, 248, 0.4), transparent );
+    animation: k-flash 2.5s linear infinite;
+}
+#blazor-loader-ui .intro>img {
+    border-radius: 3px;
+    width: 40px;
+    margin-right: 1rem;
+}
+#blazor-loader-ui .intro>span {
+    color: #fff;
+    animation: k-title 3s linear infinite;
+}
+
+@keyframes k-progress {
+    0%, 100% {
+        width: 0%;
+        background-color: #17e1e6;
+    }
+
+    50% {
+        width: 100%;
+        background-color: #28a745;
+    }
+}
+#blazor-loader-ui .bar {
+    width: 50%;
+    height: 4px;
+    border-radius: 2px;
+    margin: auto;
+    background: #E645D0;
+}
+    #blazor-loader-ui .bar .progress {
+        width: 0%;
+        height: 4px;
+        margin: auto;
+        background: #17E1E6;
+        animation: k-progress 12s linear;
+        -moz-animation: k-progress 12s linear;
+        -webkit-animation: k-progress 12s linear;
+        -o-animation: k-progress 12s linear;
+        animation: k-progress 12s linear infinite;
+    }
+
+@keyframes k01 {
+    0%, 100% {
+    }
+
+    50% {
+        box-shadow: inset 0vw 0vw 0vw .1vw #17E1E6, 0vw 0vw 1.5vw 0vw #17E1E6;
+    }
+}
+@keyframes k02 {
+    0%, 100% {
+    }
+
+    50% {
+        box-shadow: inset 0vw 0vw 0vw .1vw #17E1E6, 0vw 0vw 1.5vw 0vw #17E1E6;
+    }
+}
+@keyframes k03 {
+    0%, 100% {
+    }
+
+    50% {
+        background: none;
+        box-shadow: inset 0vw 0vw 0vw .1vw #17E1E6, 0vw 0vw 1.5vw 0vw #17E1E6;
+    }
+}
+@keyframes k04 {
+    0%, 100% {
+    }
+
+    50% {
+        box-shadow: inset 0vw 0vw 0vw .1vw #17E1E6, 0vw 0vw 1.5vw 0vw #17E1E6;
+    }
+}
+@keyframes k05 {
+    0%, 100% {
+    }
+
+    50% {
+        box-shadow: inset 0vw 0vw 0vw .1vw #17E1E6, 0vw 0vw 1.5vw 0vw #17E1E6;
+    }
+}
+@keyframes k06 {
+    0%, 100% {
+    }
+
+    50% {
+        box-shadow: inset 0vw 0vw 0vw .1vw #17E1E6, 0vw 0vw 1.5vw 0vw #17E1E6;
+    }
+}
+@keyframes k07 {
+    0%, 100% {
+    }
+
+    50% {
+        box-shadow: inset 0vw 0vw 0vw .1vw #17E1E6, 0vw 0vw 1.5vw 0vw #17E1E6;
+    }
+}
+@keyframes k08 {
+    0%, 100% {
+    }
+
+    50% {
+        box-shadow: inset 0vw 0vw 0vw .1vw #17E1E6, 0vw 0vw 1.5vw 0vw #17E1E6;
+    }
+}
+#blazor-loader-ui .petal {
+    height: 5vw;
+    max-height: 100%;
+    overflow: auto;
+    width: 2vw;
+    margin: auto;
+    max-width: 100%;
+    position: absolute;
+    border-radius: 0vw 10vw 0vw 10vw;
+    box-shadow: inset 0vw 0vw 0vw .1vw #E645D0, 0vw 0vw 1.5vw 0vw #E645D0;
+}
+#blazor-loader-ui .k01 {
+    transform: rotate(45deg);
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: 7.5vw;
+    animation: k01 1s ease infinite;
+    -moz-animation: k01 1s ease infinite;
+    -webkit-animation: k01 1s ease infinite;
+    -o-animation: k01 1s ease infinite;
+}
+#blazor-loader-ui .k02 {
+    transform: rotate(90deg);
+    left: 5.5vw;
+    right: 0;
+    top: 0;
+    bottom: 5.5vw;
+    animation: k02 1s .125s ease infinite;
+    -moz-animation: k02 1s .125s ease infinite;
+    -webkit-animation: k02 1s .125s ease infinite;
+    -o-animation: k02 1s .125s ease infinite;
+}
+#blazor-loader-ui .k03 {
+    transform: rotate(135deg);
+    left: 7.5vw;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    animation: k03 1s .25s ease infinite;
+    -moz-animation: k03 1s .25s ease infinite;
+    -webkit-animation: k03 1s .25s ease infinite;
+    -o-animation: k03 1s .25s ease infinite;
+}
+#blazor-loader-ui .k04 {
+    transform: rotate(180deg);
+    left: 5.5vw;
+    right: 0;
+    top: 5.5vw;
+    bottom: 0;
+    animation: k04 1s .375s ease infinite;
+    -moz-animation: k04 1s .375s ease infinite;
+    -webkit-animation: k04 1s .375s ease infinite;
+    -o-animation: k04 1s .375s ease infinite;
+}
+#blazor-loader-ui .k05 {
+    transform: rotate(225deg);
+    left: 0;
+    right: 0;
+    top: 7.5vw;
+    bottom: 0;
+    animation: k05 1s .5s ease infinite;
+    -moz-animation: k05 1s .5s ease infinite;
+    -webkit-animation: k05 1s .5s ease infinite;
+    -o-animation: k05 1s .5s ease infinite;
+}
+#blazor-loader-ui .k06 {
+    transform: rotate(270deg);
+    left: 0;
+    right: 5.5vw;
+    top: 5.5vw;
+    bottom: 0;
+    animation: k06 1s .625s ease infinite;
+    -moz-animation: k06 1s .625s ease infinite;
+    -webkit-animation: k06 1s .625s ease infinite;
+    -o-animation: k06 1s .625s ease infinite;
+}
+#blazor-loader-ui .k07 {
+    transform: rotate(315deg);
+    left: 0;
+    right: 7.5vw;
+    top: 0;
+    bottom: 0;
+    animation: k07 1s .750s ease infinite;
+    -moz-animation: k07 1s .750s ease infinite;
+    -webkit-animation: k07 1s .750s ease infinite;
+    -o-animation: k07 1s .750s ease infinite;
+}
+#blazor-loader-ui .k08 {
+    transform: rotate(360deg);
+    left: 0;
+    right: 5.5vw;
+    top: 0;
+    bottom: 5.5vw;
+    animation: k08 1s .875s ease infinite;
+    -moz-animation: k08 1s .875s ease infinite;
+    -webkit-animation: k08 1s .875s ease infinite;
+    -o-animation: k08 1s .875s ease infinite;
+}
+@media (min-width: 768px) {
+    #blazor-loader-ui {
+        padding-top: 8rem;
+    }
+        #blazor-loader-ui .intro {
+            margin-top: 6rem;
+        }
+}

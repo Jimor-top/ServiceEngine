@@ -1,0 +1,136 @@
+﻿@page "/platform/region"
+@using ServiceEngine.Core;
+@using ServiceEngineMasaCore.Blazor.Pages.Components
+@attribute [Authorize]
+@inherits ProComponentBase
+@inject GlobalConfig _GlobalConfig
+
+
+<MRow NoGutters>
+    <MCol Md="12">
+        <MCard Tile="@(_GlobalConfig.NavigationStyle != NavigationStyles.Rounded)">
+            <MRow Justify="JustifyTypes.SpaceBetween">
+                <MCol Cols="3">
+                    <MTreeview @bind-Active="_active"
+                               Items="_sysRegionList"
+                               TKey="long"
+                               TItem="SysRegion"
+                               Activatable
+                               OpenOnClick
+                               LoadChildren="(SysRegion e)=>FetchRegion(e)"
+                               ItemText="r=>r.Name"
+                               ItemKey="r=>r.Id"
+                               ItemChildren="r=>r.Children"
+                               Style="height:calc(100vh - 200px);overflow-y:auto;">
+                        <PrependContent>
+                            @if (context.Item.Children == null)
+                            {
+                                <MIcon>
+                                    mdi-map-marker-multiple
+                                </MIcon>
+                            }
+                        </PrependContent>
+                        <LabelContent>
+                            <div class="d-flex justify-space-between align-center">
+                                <span>@context.Item.Name</span>
+                                <MMenu Right Bottom class="mr-2">
+                                    <ActivatorContent Context="activatorContext">
+                                        <MButton Icon @attributes="@activatorContext.Attrs">
+                                            <MIcon Small>mdi mdi-dots-vertical</MIcon>
+                                        </MButton>
+                                    </ActivatorContent>
+                                    <ChildContent>
+                                        <MList>
+                                            <MListItem OnClick="()=>OpenAddDialog(context.Item.Id,context.Item.Name)">
+                                                <MIcon Small>mdi-plus-circle-outline</MIcon>
+                                                <MListItemTitle Class="ml-2"> @T("AddSubordinate") </MListItemTitle>
+                                            </MListItem>
+                                            <MListItem>
+                                                <MIcon Small>mdi-pencil-outline</MIcon>
+                                                <MListItemTitle Class="ml-2"> @T("Edit") </MListItemTitle>
+                                            </MListItem>
+                                            <MListItem>
+                                                <MIcon Small>mdi-trash-can-outline</MIcon>
+                                                <MListItemTitle Class="ml-2"> @T("Delete") </MListItemTitle>
+                                            </MListItem>
+                                        </MList>
+                                    </ChildContent>
+                                </MMenu>
+                            </div>
+                        </LabelContent>
+                    </MTreeview>
+                </MCol>
+                <MDivider Vertical></MDivider>
+                <MCol Cols="9">
+                    <MRow>
+                        <MRow>
+                            <MCol Align="@AlignTypes.Center" class="ml-4">
+                                @*<PBlockText Primary="账号:"></PBlockText>*@
+                                <MTextField TValue="string" Label="@T("Account")"></MTextField>
+                            </MCol>
+                            <MCol Align="@AlignTypes.Center">
+                                @*<PBlockText Primary="手机号码:"></PBlockText>*@
+                                <MTextField TValue="string" Label="@T("Phone")"></MTextField>
+                            </MCol>
+                            <MCol Align="@AlignTypes.Center">
+                                <MButton Depressed>@T("Reset")</MButton>
+                                <MButton Depressed>@T("Add")</MButton>
+                                <MButton Depressed>@T("Query")</MButton>
+                            </MCol>
+                        </MRow>
+                    </MRow>
+                    <MRow>
+                        <MCol Cols="12">
+                            <MDataTable Headers="_headers" Items="_sysRegionPage" TItem="SysRegion" HideDefaultFooter Class="elevation-1" Style="width: 100%;height:calc(100vh - 260px);overflow-y:auto;" ItemsPerPage="100">
+                                <HeaderColContent Context="header">
+                                    <span class="text-subtitle">@header.Text</span>
+                                </HeaderColContent>
+                                <ItemColContent>
+                                    @switch (context.Header.Value)
+                                    {
+                                        case nameof(SysRegion.Index):
+                                            <span>@context.Item.Index</span>
+                                            break;
+                                        default:
+                                            @context.Value
+                                            break;
+                                    }
+                                </ItemColContent>
+                            </MDataTable>
+                            <div class="d-flex align-end flex-column">
+                                <MRow NoGutters Align="@AlignTypes.Center">
+                                    <MCol class="mr-4">
+                                        <span>@($"共{_tatolCount}条")</span>
+                                    </MCol>
+                                    <MCol Align="@AlignTypes.Center">
+                                        <MSelectTemplate Value="@_paginationSelect"
+                                                            ValueChanged="OnSelectValueChange"></MSelectTemplate>
+                                    </MCol>
+                                    <MCol Align="@AlignTypes.Center">
+                                        <MPagination Length="_tatolPage" Value="_currentPage" TotalVisible="6" ValueChanged="OnPaginationValueChange"></MPagination>
+                                    </MCol>
+                                </MRow>
+                            </div>
+                        </MCol>
+                    </MRow>
+                </MCol>
+            </MRow>
+        </MCard>
+    </MCol>
+</MRow>
+@code {
+
+}
+<style>
+    .centered-content {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .custom-switch {
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+    }
+</style>

@@ -1,0 +1,19 @@
+﻿@using ServiceEngineMasaCore.Blazor.JWTAuthentication
+
+<SpaStarter>
+    <Router AppAssembly="@typeof(App).Assembly">
+        <Found Context="routeData">
+            <AuthorizeRouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)">
+                <NotAuthorized>
+                    <ServiceEngineMasaCore.Blazor.Pages.Authentication.Login />
+                </NotAuthorized>
+            </AuthorizeRouteView>
+        </Found>
+        <NotFound>
+            <PageTitle>Not found</PageTitle>
+            <LayoutView Layout="@typeof(MainLayout)">
+                <ServiceEngineMasaCore.Blazor.Pages.Others.NotFound></ServiceEngineMasaCore.Blazor.Pages.Others.NotFound>
+            </LayoutView>
+        </NotFound>
+    </Router>
+</SpaStarter>

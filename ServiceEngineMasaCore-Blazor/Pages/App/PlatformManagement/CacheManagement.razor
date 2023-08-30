@@ -1,0 +1,73 @@
+﻿@page "/platform/cache"
+@attribute [Authorize]
+@inherits ProComponentBase
+@inject GlobalConfig _GlobalConfig
+
+
+<MRow NoGutters>
+    <MCol Md="12">
+        <MCard Tile="@(_GlobalConfig.NavigationStyle != NavigationStyles.Rounded)">
+            <MRow Justify="JustifyTypes.SpaceBetween">
+                <MCol Cols="2">
+                    <MCard>
+                        <MCardTitle>
+                            缓存列表
+                        </MCardTitle>
+                        <MDivider Vertical></MDivider>
+                        <MTreeview @bind-Active="_active" 
+                                   Items="_sysCacheList"
+                                   TKey="string"
+                                   TItem="CacheData"
+                                   Activatable
+                                   OpenOnClick
+                                   ItemText="r=>r.Name"
+                                   ItemKey="r=>r.Id"
+                                   ItemChildren="r=>r.Children"
+                                   Style="height:calc(100vh - 240px);overflow-y:auto;">
+                            <PrependContent>
+                                @if (context.Item.Children == null)
+                                {
+                                    <MIcon>
+                                        mdi-database-sync
+                                    </MIcon>
+                                }
+                            </PrependContent>
+                            <LabelContent>
+                                <div class="d-flex justify-space-between align-center" @onclick="()=>FetchCache(context.Item.Id)">
+                                    <span>@context.Item.Name</span>
+                                </div>
+                            </LabelContent>
+                        </MTreeview>
+                    </MCard>
+                </MCol>
+                <MDivider Vertical></MDivider>
+                <MCol Cols="10">
+                    <MCard>
+                        <MCardTitle>
+                            @cacheTitle
+                        </MCardTitle>
+                        <MMonacoEditor Style="height:calc(100vh - 240px);overflow-y:auto;" EditorOptions="Options" @ref="_editor"></MMonacoEditor>
+                    </MCard>
+                </MCol>
+            </MRow>
+        </MCard>
+    </MCol>
+</MRow>
+@code {
+
+}
+<style>
+    .centered-content {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .custom-switch {
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+    }
+</style>
+
+

@@ -1,0 +1,48 @@
+﻿@using ServiceEngine.Core;
+
+<MDataTable Headers="Hheaders"
+            Items="HItems"
+            TItem="SysMenu"
+            ItemKey="r=>r.Name"
+            HideDefaultFooter
+            Class="elevation-1"
+            Style="width: 100%;background-color:antiquewhite;"
+            SingleExpand="_singleExpand"
+            ShowExpand>
+    <ItemColContent>
+        @switch (context.Header.Value)
+        {
+            case nameof(SysMenu.Type):
+                var type = context.Item.Type.GetDescription();
+                IEnumerable<BlockTextTag> tags = new List<BlockTextTag>()
+                {
+                new(type, "orange",true)
+                };
+                <PBlockText Tags="@tags" class="custom-pblocktext"></PBlockText>
+                break;
+            case nameof(SysMenu.Status):
+                var Status = false;
+                if (context.Item.Status == StatusEnum.Enable)
+                {
+                    Status = true;
+                }
+                <MSwitch Style="padding:0px;margin:0px;" @bind-Value="Status" Inset></MSwitch>
+                break;
+            case "Action":
+                <MIcon Small
+                       Class="mr-2">mdi-pencil</MIcon>
+                <MIcon Small>mdi-delete</MIcon>
+                break;
+            default:
+                @context.Value
+                break;
+        }
+    </ItemColContent>
+    <ExpandedItemContent>
+        <td colspan="@Hheaders.Count" style="margin:0;padding:0;">
+            <MSysMenuDataTable Hheaders="Hheaders"
+                              HItems="@context.Item.Children">
+            </MSysMenuDataTable>
+        </td>
+    </ExpandedItemContent>
+</MDataTable>

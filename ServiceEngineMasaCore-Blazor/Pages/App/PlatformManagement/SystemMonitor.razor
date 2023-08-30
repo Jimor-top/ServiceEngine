@@ -1,0 +1,167 @@
+﻿@page "/platform/server"
+@using ServiceEngine.Core;
+@attribute [Authorize]
+@inherits ProComponentBase
+@inject GlobalConfig _GlobalConfig
+
+<div class="d-flex flex-wrap">
+    <MRow NoGutters Class="pr-2 mb-2">
+        <MCol Cols="12">
+            <MCard Tile="@(_GlobalConfig.NavigationStyle != NavigationStyles.Rounded)">
+                <MCardTitle>
+                    系统信息
+                </MCardTitle>
+                <MDivider></MDivider>
+                @if (_baseInfo != null)
+                {
+                    <MSimpleTable Height="420">
+                        <tbody>
+                            <tr>
+                                <td>主机名称：</td>
+                                <td>@_baseInfo?.hostName</td>
+                            </tr>
+                            <tr>
+                                <td>操作系统：</td>
+                                <td>@_baseInfo?.systemOs</td>
+                            </tr>
+                            <tr>
+                                <td>系统架构：</td>
+                                <td>@_baseInfo?.osArchitecture</td>
+                            </tr>
+                            <tr>
+                                <td>CPU核数：</td>
+                                <td>@_baseInfo?.processorCount</td>
+                            </tr>
+                            <tr>
+                                <td>运行时长：</td>
+                                <td>@_baseInfo?.sysRunTime</td>
+                            </tr>
+                            <tr>
+                                <td>外网地址：</td>
+                                <td>@_baseInfo?.remoteIp</td>
+                            </tr>
+                            <tr>
+                                <td>内网地址：</td>
+                                <td>@_baseInfo?.localIp</td>
+                            </tr>
+                            <tr>
+                                <td>运行框架：</td>
+                                <td>@_baseInfo?.frameworkDescription</td>
+                            </tr>
+                        </tbody>
+                    </MSimpleTable>
+                }
+                else
+                {
+                    <MSkeletonLoader  Boilerplate="true" Type="table-heading, list-item-two-line"></MSkeletonLoader>
+                }
+
+            </MCard>
+        </MCol>
+    </MRow>
+    <MRow NoGutters Class="mb-2">
+        <MCol Cols="12">
+            <MCard Tile="@(_GlobalConfig.NavigationStyle != NavigationStyles.Rounded)">
+                <MCardTitle>
+                    资源信息
+                </MCardTitle>
+                <MDivider></MDivider>
+                @if (_usedInfo != null)
+                {
+                    <MSimpleTable Height="420">
+                        <tbody>
+                            <tr>
+                                <td style="text-align: center;"><ServiceEngineMasaCore.Blazor.Pages.ECharts.EGauge GaugeData="_MemoryGaugeData" width="200" height="170"></ServiceEngineMasaCore.Blazor.Pages.ECharts.EGauge></td>
+                                <td style="text-align: center;"><ServiceEngineMasaCore.Blazor.Pages.ECharts.EGauge GaugeData="_CpuGaugeData" width="200" height="170"></ServiceEngineMasaCore.Blazor.Pages.ECharts.EGauge></td>
+                            </tr>
+                            <tr>
+                                <td>启动时间：</td>
+                                <td>@_usedInfo?.startTime</td>
+                            </tr>
+                            <tr>
+                                <td>运行时长：</td>
+                                <td>@_usedInfo?.runTime</td>
+                            </tr>
+                            @if(_baseInfo != null){
+                                <tr>
+                                    <td>网站目录：</td>
+                                    <td>@_baseInfo?.wwwroot</td>
+                                </tr>
+                                <tr>
+                                    <td>开发环境：</td>
+                                    <td>@_baseInfo?.environment</td>
+                                </tr>
+                                <tr>
+                                    <td>环境变量：</td>
+                                    <td>@_baseInfo?.stage</td>
+                                </tr>
+                            }
+                          
+                        </tbody>
+                    </MSimpleTable>
+                }
+                else
+                {
+                    <MSkeletonLoader Boilerplate="true" Type="table-heading, list-item-two-line"></MSkeletonLoader>
+                }
+            </MCard>
+
+        </MCol>
+    </MRow>
+</div>
+<MRow>
+    <MCol Cols="12">
+        <MCard Tile="@(_GlobalConfig.NavigationStyle != NavigationStyles.Rounded)">
+            <MCardTitle>
+                程序集信息
+            </MCardTitle>
+            <MDivider></MDivider>
+            @if(_assemblyList != null){
+                <div class="d-flex flex-wrap-reverse">
+                    @foreach (var item in _assemblyList)
+                    {
+                        <MCard Class="pa-2 ma-2" Outlined Tile="@(_GlobalConfig.NavigationStyle != NavigationStyles.Rounded)">
+                            @($"{item.name} {item.version}")
+                        </MCard>
+                    }
+                </div>
+            }
+            else
+            {
+                <MSkeletonLoader Boilerplate="true" Type="table-heading, list-item-two-line"></MSkeletonLoader>
+            }
+        </MCard>
+    </MCol>
+</MRow>
+
+<MRow>
+    <MCol Cols="12">
+        <MCard Tile="@(_GlobalConfig.NavigationStyle != NavigationStyles.Rounded)">
+            <MCardTitle>
+                磁盘信息
+            </MCardTitle>
+            <MDivider></MDivider>
+            @if (_diskInfo != null && dickGaugeDataList.Count() > 0)
+            {
+                <div class="d-flex flex-wrap-reverse">
+                    @foreach (var item in dickGaugeDataList)
+                    {
+                        <ServiceEngineMasaCore.Blazor.Pages.ECharts.EGauge GaugeData="@item" width="200" height="170"></ServiceEngineMasaCore.Blazor.Pages.ECharts.EGauge>
+                    }
+                </div>
+            }
+            else
+            {
+                <MSkeletonLoader Boilerplate="true" Type="table-heading, list-item-two-line"></MSkeletonLoader>
+            }
+        </MCard>
+    </MCol>
+</MRow>
+<style>
+    .custom-pblocktext span {
+        padding: 4px !important;
+        height: 26px !important;
+        font-size: 16px !important;
+    }
+</style>
+

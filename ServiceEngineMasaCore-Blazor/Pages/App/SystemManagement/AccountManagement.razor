@@ -1,0 +1,181 @@
+﻿@page "/system/account"
+@using ServiceEngine.Core;
+@using ServiceEngineMasaCore.Blazor.Pages.Components
+@attribute [Authorize]
+@inherits ProComponentBase
+@inject GlobalConfig _GlobalConfig
+@inject MasaBlazor MasaBlazor
+
+<MRow NoGutters >
+    <MCol Md="12">
+        <MCard Tile="@(_GlobalConfig.NavigationStyle != NavigationStyles.Rounded)">
+            <MRow Justify="JustifyTypes.SpaceBetween">
+                <MCol Cols="2">
+                    <MTreeview Active="_active"
+                               Items="_sysOrgList"
+                               OnActiveUpdate="(List<SysOrg> e)=>ActiveUpdated(e)"
+                               Activatable
+                               OpenOnClick
+                               ItemText="r=>r.Name"
+                               ItemKey="r=>r.Id"
+                               ItemChildren="r=>r.Children">
+                        <PrependContent>
+                            @if (context.Item.Children == null)
+                            {
+                                <MIcon>
+                                    mdi-account
+                                </MIcon>
+                            }
+                        </PrependContent>
+                        <LabelContent>
+                            <div class="d-flex justify-space-between align-center">
+                                <span>@context.Item.Name</span>
+                                <MMenu Right Bottom class="mr-2">
+                                    <ActivatorContent Context="activatorContext">
+                                        <MButton Icon @attributes="@activatorContext.Attrs">
+                                            <MIcon Small>mdi mdi-dots-vertical</MIcon>
+                                        </MButton>
+                                    </ActivatorContent>
+                                    <ChildContent>
+                                        <MList>
+                                            <MListItem OnClick="()=>OpenAddDialog(context.Item.Id,context.Item.Name)">
+                                                <MIcon Small>mdi-plus-circle-outline</MIcon>
+                                                <MListItemTitle Class="ml-2"> @T("AddSubordinate") </MListItemTitle>
+                                            </MListItem>
+                                            <MListItem>
+                                                <MIcon Small>mdi-pencil-outline</MIcon>
+                                                <MListItemTitle Class="ml-2"> @T("Edit") </MListItemTitle>
+                                            </MListItem>
+                                            <MListItem>
+                                                <MIcon Small>mdi-trash-can-outline</MIcon>
+                                                <MListItemTitle Class="ml-2"> @T("Delete") </MListItemTitle>
+                                            </MListItem>
+                                        </MList>
+                                    </ChildContent>
+                                </MMenu>
+                            </div>
+                        </LabelContent>
+                    </MTreeview>
+                </MCol>
+                <MDivider Vertical></MDivider>
+                <MCol Cols="10">
+                    <MRow>
+                        <MRow>
+                            <MCol Align="@AlignTypes.Center" class="ml-4">
+                                @*<PBlockText Primary="账号:"></PBlockText>*@
+                                <MTextField TValue="string" Label="@T("Account")"></MTextField>
+                            </MCol>
+                            <MCol Align="@AlignTypes.Center">
+                                @*<PBlockText Primary="手机号码:"></PBlockText>*@
+                                <MTextField TValue="string" Label="@T("Phone")"></MTextField>
+                            </MCol>
+                            <MCol Align="@AlignTypes.Center">
+                                <MButton Depressed>@T("Reset")</MButton>
+                                <MButton Depressed>@T("Add")</MButton>
+                                <MButton Depressed>@T("Query")</MButton>
+                            </MCol> 
+                        </MRow>
+                    </MRow>
+                    <MRow>
+                        <MCol Cols="12">
+                            <MDataTable Headers="_headers" Items="_sysUserList" TItem="SysUser" HideDefaultFooter Class="elevation-1" Style="width: 100%;" ItemsPerPage="100">
+                                <HeaderColContent Context="header">
+                                    <span class="text-subtitle">@header.Text</span>
+                                </HeaderColContent>
+                                <ItemColContent>
+                                    @switch (context.Header.Value)
+                                    {
+                                        case nameof(SysUser.Index):
+                                            <span>@context.Item.Index</span>
+                                            break;
+                                        case nameof(SysUser.Avatar):
+                                            @if (context.Item.Avatar != null)
+                                            {
+                                                <MAvatar Size="120">
+                                                    <MImage Contain Src="@(context.Item.Avatar)" />
+                                                </MAvatar>
+                                            }
+                                            else
+                                            {
+                                                <MAvatar Size="24" Color="blue-grey lighten-4">
+                                                    <span style="font-size:6px">@context.Item.RealName.Substring(0,1)</span>
+                                                </MAvatar>
+                                            }
+                                            break;
+                                        case nameof(SysUser.Sex):
+                                            var genderText = "";
+                                            if (context.Item?.Sex != null)
+                                            {
+                                                if (context.Item.Sex == GenderEnum.Male)
+                                                {
+                                                    genderText = "男";
+                                                }
+                                                else
+                                                {
+                                                    genderText = "女";
+                                                }
+                                            }
+                                            else
+                                            {
+                                                genderText = "未知";
+                                            }
+                                            <span>@genderText</span>
+                                            break;
+                                        case nameof(SysUser.Status):
+                                            var Status = false;
+                                            if (context.Item.Status == StatusEnum.Enable)
+                                            {
+                                                Status = true;
+                                            }
+                                            <MSwitch Style="padding:0px;margin:0px;" @bind-Value="Status" Inset></MSwitch>
+                                            break;
+                                        case "Action":
+                                            <MIcon Small
+                                                   Class="mr-2"
+                                                   >mdi-pencil</MIcon>
+                                            <MIcon Small
+                                                   >mdi-delete</MIcon>
+                                            break;
+                                        default:
+                                            @context.Value
+                                            break;
+                                    }
+                                </ItemColContent>
+                            </MDataTable>
+                            <div class="d-flex align-end flex-column">
+                                <MRow NoGutters Align="@AlignTypes.Center">
+                                    <MCol class="mr-4">
+                                        <span>@($"共{_tatolCount}条")</span>
+                                    </MCol>
+                                    <MCol Align="@AlignTypes.Center">
+                                        <MSelectTemplate Value="@_paginationSelect"
+                                                            ValueChanged="OnSelectValueChange"></MSelectTemplate>
+                                    </MCol>
+                                    <MCol Align="@AlignTypes.Center">
+                                        <MPagination Length="_tatolPage" Value="_currentPage" TotalVisible="6" ValueChanged="OnPaginationValueChange"></MPagination>
+                                    </MCol>
+                                </MRow>
+                            </div>
+                        </MCol>
+                    </MRow>
+                </MCol>
+            </MRow>
+        </MCard>
+    </MCol>
+</MRow>
+@code {
+
+}
+<style>
+    .centered-content {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .custom-switch {
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+    }
+</style>

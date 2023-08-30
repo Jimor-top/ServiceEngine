@@ -1,0 +1,92 @@
+﻿@page "/system/role"
+@using ServiceEngine.Core;
+@using ServiceEngineMasaCore.Blazor.Pages.Components
+@attribute [Authorize]
+@inherits ProComponentBase
+@inject GlobalConfig _GlobalConfig
+
+<MCard Tile="@(_GlobalConfig.NavigationStyle != NavigationStyles.Rounded)">
+    <MRow NoGutters>
+        <MCol Md="12">
+            <MRow>
+                <MCol Align="@AlignTypes.Center" class="ml-4">
+                    @*<PBlockText Primary="账号:"></PBlockText>*@
+                    <MTextField TValue="string" Label="@T("Role Name")"></MTextField>
+                </MCol>
+                <MCol Align="@AlignTypes.Center">
+                    @*<PBlockText Primary="手机号码:"></PBlockText>*@
+                    <MTextField TValue="string" Label="@T("Role Code")"></MTextField>
+                </MCol>
+                <MCol Align="@AlignTypes.Center">
+                    <MButton Depressed>@T("Reset")</MButton>
+                    <MButton Depressed>@T("Add")</MButton>
+                    <MButton Depressed>@T("Query")</MButton>
+                </MCol>
+            </MRow>
+            <MRow>
+                <MCol Cols="12">
+                    <MDataTable Headers="_headers" Items="_sysRoleList" TItem="SysRole" HideDefaultFooter Class="elevation-1" Style="width: 100%;height:calc(100vh - 280px);overflow-y:auto;" ItemsPerPage="100" Loading="_isLoading">
+                        <HeaderColContent Context="header">
+                            <span class="text-subtitle">@header.Text</span>
+                        </HeaderColContent>
+                        <ItemColContent>
+                            @switch (context.Header.Value)
+                            {
+                                case nameof(SysRole.Index):
+                                    <span>@context.Item.Index</span>
+                                    break;
+                                case nameof(SysRole.DataScope):
+                                    var dataScope = context.Item.DataScope.GetDescription();
+                                    IEnumerable<BlockTextTag> dataScopeTag = new List<BlockTextTag>()
+                                    {
+                                        new(dataScope, "red",true),
+                                    };
+                                    <PBlockText Tags="@dataScopeTag" class="custom-pblocktext"></PBlockText>
+                                    break;
+                                case nameof(SysRole.Status):
+                                    var status = "停用";
+                                    var color = "red";
+                                    if (context.Item.Status == StatusEnum.Enable)
+                                    {
+                                        status = "启用";
+                                        color = "green";
+                                    }
+                                    IEnumerable<BlockTextTag> tags = new List<BlockTextTag>()
+                                    {
+                                        new(status, color,"white"),
+                                    };
+                                    <PBlockText Tags="@tags" class="custom-pblocktext"></PBlockText>
+                                    break;
+                                default:
+                                    @context.Value
+                                    break;
+                                    }
+                        </ItemColContent>
+                    </MDataTable>
+                    <div class="d-flex align-end flex-column">
+                        <MRow NoGutters Align="@AlignTypes.Center">
+                            <MCol class="mr-4">
+                                <span>@($"共{_tatolCount}条")</span>
+                            </MCol>
+                            <MCol Align="@AlignTypes.Center">
+                                <MSelectTemplate Value="@_paginationSelect"
+                                                  ValueChanged="OnSelectValueChange"></MSelectTemplate>
+                            </MCol>
+                            <MCol Align="@AlignTypes.Center">
+                                <MPagination Length="_tatolPage" Value="_currentPage" TotalVisible="6" ValueChanged="OnPaginationValueChange"></MPagination>
+                            </MCol>
+                        </MRow>
+                    </div>
+                </MCol>
+            </MRow>
+        </MCol>
+    </MRow>
+</MCard>
+
+<style>
+    .custom-pblocktext   span {
+        padding: 4px !important;
+        height: 26px !important;
+        font-size: 16px !important;
+    }
+</style>

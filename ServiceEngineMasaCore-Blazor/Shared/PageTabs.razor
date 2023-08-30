@@ -1,0 +1,34 @@
+﻿@inherits ProComponentBase
+@inject NavHelper NavHelper
+
+@*TabClass="px-6 rounded-t-xl"*@
+<PPageTabs @ref="PPageTabs"
+           TabOptions="@TabOptions"
+           Ripple="false"
+           SelfPatterns="@SelfPatterns">
+    <ChildContent>
+        @ChildContent
+    </ChildContent>
+</PPageTabs>
+
+@code {
+
+    public PPageTabs? PPageTabs { get; private set; }
+
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
+
+    [Parameter]
+    public IEnumerable<string>? SelfPatterns { get; set; }
+
+    private TabOptions TabOptions(PageTabPathValue value)
+    {
+        var item = NavHelper.PageTabItems.FirstOrDefault(u => value.AbsolutePath == u.Href);
+        var title = T(item?.Title);
+        var icon = item?.Icon;
+        var titleClass = $"mx-2 text-capitalize {(value.Selected ? "neutral--text" : "")}";
+
+        return new TabOptions(title, icon, titleClass);
+    }
+
+}

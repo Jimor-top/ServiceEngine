@@ -1,0 +1,152 @@
+﻿@page "/system/userCenter"
+@using ServiceEngine.Core;
+@attribute [Authorize]
+@inherits ProComponentBase
+@inject GlobalConfig _GlobalConfig
+
+<PEnqueuedSnackbars Closeable=true Position="@SnackPosition.TopCenter" @ref="_enqueuedSnackbars"></PEnqueuedSnackbars>
+<MRow NoGutters >
+    <MCol Md="12">
+        <MCard Height="298" class="text-center" Tile="@(_GlobalConfig.NavigationStyle != NavigationStyles.Rounded)">
+            @if (_UserInfo != null && string.IsNullOrEmpty(_UserInfo?.Avatar))
+            {
+                <MAvatar Size="120">
+                    <MImage Contain Src="img/avatar/4.svg" />
+                </MAvatar>
+                @*string color = "blue-grey lighten-1";
+                <MAvatar Size="120" Color="@($"{color}-lighten-5")">
+                    <span class="@($"{color}--text text-h3")" style="font-size:initial">@_UserInfo.Account</span>
+                </MAvatar>*@
+            }
+            else
+            {
+                <MAvatar Size="120">
+                    <MImage Contain Src="@_UserInfo?.Avatar" />
+                </MAvatar>
+            }
+            <h5 class="mt-1">@_UserInfo?.RealName</h5>
+            <MRow NoGutters class="mt-4">
+                <MCol Md="6" class="text-center">
+                    <h5>@_UserInfoDto?.OrgName</h5>
+                    <span class="text-body2">@T("Institution Name")</span>
+                </MCol>
+                <MCol Md="6" class="text-center">
+                    <h5>@_UserInfoDto?.PosName</h5>
+                    <span class="text-body2">@T("Job Title")</span>
+                </MCol>
+            </MRow>
+        </MCard>
+        <MDivider Vertical />
+    </MCol>
+</MRow>
+<MRow NoGutters class="mt-3">
+    <MCol Md="12">
+        <MCard Tile="@(_GlobalConfig.NavigationStyle != NavigationStyles.Rounded)">
+            <MTabs @bind-Value="_tab" BackgroundColor="transparent" Grow >
+                <MTab Class="text-capitalize">@T("Basic Information")</MTab>
+                <MTab Class="text-capitalize">@T("Change Password")</MTab>
+            </MTabs>
+            <MTabsItems Value="@_tab">
+                <MTabItem>
+                    <MCard Flat>
+                        <MCardText>
+                            <MRow>
+                                <MCol>
+                                    <MTextField @bind-Value="_UserInfo.Account" Disabled=@(!_EditEnable) Class="mb-6" Label="@T("Account")" HideDetails="@("auto")" Outlined Clearable />
+                                </MCol>
+                                <MCol>
+                                    <MTextField @bind-Value="_UserInfo.RealName" Disabled=@(!_EditEnable) Class="mb-6" Label="@T("RealName")" HideDetails="@("auto")" Outlined Clearable />
+                                </MCol>
+                            </MRow>
+                            <MRow>
+                                <MCol>
+                                    <MTextField @bind-Value="_UserInfo.Phone" Disabled=@(!_EditEnable) Class="mb-6" Label="@T("Phone")" HideDetails="@("auto")" Outlined Clearable />
+                                </MCol>
+                                <MCol>
+                                    <MTextField @bind-Value="_UserInfo.Email" Disabled=@(!_EditEnable) Class="mb-6" Label="@T("Email")" HideDetails="@("auto")" Outlined Clearable />
+                                </MCol>
+                            </MRow>
+                            <MRow>
+                                <MCol>
+                                    <MTextField @bind-Value="_UserInfo.Address" Disabled=@(!_EditEnable) Class="mb-6" Label="@T("Address")" HideDetails="@("auto")" Outlined Clearable/>
+                                </MCol>
+                            </MRow>
+                            <MRow>
+                                <MCol>
+                                    <MMenu @bind-Value="_TimeMenu" CloseOnContentClick="false" Transition="scale-transition"
+                                           OffsetY
+                                           MinWidth="@("auto")">
+                                        <ActivatorContent>
+                                            <MTextField @bind-Value="_UserInfo.JoinDate" Disabled=@(!_EditEnable) Class="mb-6" Label="@T("JoinDate")" HideDetails="@("auto")" Outlined Readonly Clearable @attributes="context.Attrs" />
+                                        </ActivatorContent>
+                                        <ChildContent>
+                                            <MDatePicker @bind-Value="_Date"
+                                                              NoTitle
+                                                              Scrollable>
+                                                <MSpacer></MSpacer>
+                                                <MButton Text
+                                                         Color="primary" 
+                                                         OnClick="()=>{_TimeMenu = false; }">
+                                                    Cancel
+                                                </MButton>
+                                                <MButton Text
+                                                         Color="primary"
+                                                         OnClick="()=> SetDateTime()">
+                                                    OK
+                                                </MButton>
+                                            </MDatePicker>
+                                        </ChildContent>
+                                    </MMenu>
+                                </MCol>
+                                <MCol>
+                                    <MRadioGroup @bind-Value="_UserInfo.Sex" Row Class="mb-8">
+                                        <MRadio Label="@T("Male")" Value="@(GenderEnum.Male)"></MRadio>
+                                        <MRadio Label="@T("Female")" Value="@(GenderEnum.Female)"></MRadio>
+                                    </MRadioGroup>
+                                </MCol>
+                            </MRow>
+                            <MRow>
+                                <MCol>
+                                    <MTextarea @bind-Value="_UserInfo.Introduction" Disabled=@(!_EditEnable) Class="mb-6" Label="@T("Introduction")" HideDetails="@("auto")" Outlined Clearable />
+                                </MCol>
+                            </MRow>
+                            <div class="d-flex align-end flex-column">
+                                <MRow>
+                                    <MCol>
+                                        <MButton Outlined MinWidth="100" OnClick="() => Edit_Click()">@T("Edit")</MButton>
+                                        <MButton Outlined MinWidth="100" OnClick="() => Save_Click()">@T("Save")</MButton>
+                                    </MCol>
+                                </MRow>
+                            </div>
+                        </MCardText>
+                    </MCard>
+                </MTabItem>
+
+                <MTabItem>
+                    <MCard>
+                        <MCardText>
+                            <MRow>
+                                <MCol>
+                                    <MTextField @bind-Value="CurrentPassword" Class="mb-6" Label="@T("CurrentPassword")" Type="@(_show ? "text" : "password")" HideDetails="@("auto")" Outlined Clearable />
+                                    <MTextField @bind-Value="NewPassword" Class="mb-6" Label="@T("NewPassword")" Type="@(_show ? "text" : "password")" HideDetails="@("auto")" Outlined Clearable />
+                                    <MTextField @bind-Value="ConfirmPassword" Class="mb-6" Label="@T("ConfirmPassword")" Type="@(_show ? "text" : "password")" HideDetails="@("auto")" Outlined Clearable />
+                                </MCol>
+                            </MRow>
+                            <div class="d-flex align-end flex-column">
+                                <MRow>
+                                    <MCol>
+                                        <MButton Outlined MinWidth="100" OnClick="() => Reset_Click()">@T("Reset")</MButton>
+                                        <MButton Outlined MinWidth="100" OnClick="() => Confirm_Click()">@T("Confirm")</MButton>
+                                    </MCol>
+                                </MRow>
+                            </div>
+                        </MCardText>
+                    </MCard>
+                </MTabItem>
+            </MTabsItems>
+        </MCard>
+    </MCol>
+</MRow>
+@code {
+   
+}

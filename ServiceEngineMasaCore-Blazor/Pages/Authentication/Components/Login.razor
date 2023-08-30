@@ -1,0 +1,51 @@
+﻿<MCard Width=510 Height=680 Class="mx-auto my-auto" @onkeydown="KeyHandler">
+    <div style="height:60px;"></div>
+    <div class="mt-2 mx-auto text-center" style="width:420px;">
+        <MAvatar Size=80>
+            <MImage Src="/img/avatar/1.svg">
+            </MImage>
+        </MAvatar>
+        <h5 class="mt-2 mb-12">Hi！欢迎来到软件服务管理平台! 👋</h5>
+          <MForm Model="@_model" OnValidSubmit="SubmitAsync" EnableValidation>
+            <MTextField @bind-Value="@_model.Account"
+                TValue="string"
+                Label="邮箱/手机号"
+                Placeholder="请输入邮箱或者手机号！"
+                Outlined
+                HideDetails="@("auto")"
+                Autofocus>
+            </MTextField>
+            <MTextField @bind-Value="@_model.Password"
+                TValue="string"
+                Class="mt-10"
+                Label="密码"
+                Type="@(_show ? "text" : "password")"
+                Placeholder="密码"
+                AppendIcon="@(_show ? "mdi-eye" : "mdi-eye-off")"
+                OnAppendClick="() => _show = !_show"
+                Outlined
+                HideDetails="@("auto")">
+            </MTextField>
+        </MForm>
+        <span class="d-flex justify-end mt-1 text-caption hover-pointer">
+            忘记密码?
+        </span>
+        <MButton Class="mt-11 rounded-4 text-btn white--text" Loading="@(_loading)" Disabled="@(_loading)" OnClick=SubmitAsync Height=46 Width=340 Color="primary">登录</MButton>
+
+        <div class="my-6">
+            <span class="text-btn">注册新账号? &nbsp;</span>
+            <span class="primary--text hover-pointer">注册</span>
+        </div>
+        <div class="d-flex block-center">
+            <div style="height:0.5px;width:152px;" class="neutral-lighten-5"></div>
+            <span class="text-caption mx-4">其他登录方式</span>
+            <div style="height:0.5px;width:152px;" class="neutral-lighten-5"></div>
+        </div>
+        <div class="mt-4">
+            <MIcon Size=24 Color="neutral-lighten-2" OnClick="() => { }">fa:fab fa-codepen</MIcon>
+            <MIcon Size=24 Color="neutral-lighten-2" Class="ml-6" OnClick="() => { }">fa:fab fa-github</MIcon>
+            <MIcon Size=24 Color="neutral-lighten-2" Class="ml-6" OnClick="() => { }">fa:fab fa-twitter</MIcon>
+            <MIcon Size=24 Color="neutral-lighten-2" Class="ml-6" OnClick="() => { }">fa:fab fa-instagram</MIcon>
+        </div>
+    </div>
+</MCard>

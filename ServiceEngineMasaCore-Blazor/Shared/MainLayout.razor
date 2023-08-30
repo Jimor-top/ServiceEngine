@@ -1,0 +1,64 @@
+﻿@using System.Globalization
+@using System.Runtime.InteropServices
+@inherits LayoutComponentBase
+@inject I18n I18n
+@inject IJSRuntime jsRuntime
+
+<MApp>
+    <AuthorizeView>
+        <Authorized>
+            <PPageTabsProvider>
+                <CascadingValue Value="I18n.Culture.Name" Name="CultureName">
+                    <MAppBar Elevation=0 App Height="100" Class="default-app-bar mx-6">
+                        <div class="default-app-bar__actions @PageModeClass">
+                            <Favorite />
+                            <MSpacer />
+                            @*<Search />*@
+                            <MIcon Size=20 Class="ml-5" Color="neutral-lighten-3" OnClick="() => ToggleFullscreen()">mdi-fullscreen</MIcon>
+                            <MIcon Size=20 Class="ml-5" Color="neutral-lighten-3">mdi-message-processing-outline</MIcon>
+                            <MIcon Size=20 Class="ml-5" Color="neutral-lighten-3" OnClick="() => _showSetting = true">mdi-cog-outline</MIcon>
+                            <Language OnLanguageChanged="OnLanguageChanged" />
+                            <Login />
+                        </div>
+                        <div class="default-app-bar__nav @PageModeClass">
+                            @if (_pageTab == PageModes.PageTab)
+                            {
+                                <PageTabs @ref="_pageTabs" SelfPatterns="@s_selfPatterns" />
+                            }
+                            else
+                            {
+                                <Breadcrumb />
+                            }
+                        </div>
+                    </MAppBar>
+
+                    <Navigation />
+
+                    <MMain Class="fill lighten-1">
+                        <div class="pa-6">
+                            @if (_pageTab == PageModes.PageTab)
+                            {
+                                <PPageContainer PageTabs="@_pageTabs?.PPageTabs" SelfPatterns="@s_selfPatterns">
+                                    @Body
+                                </PPageContainer>
+                            }
+                            else
+                            {
+                                @Body
+                            }
+                        </div>
+                    </MMain>
+                    <Settings @bind-PageModel="_pageTab" @bind-Show=_showSetting />
+                </CascadingValue>
+            </PPageTabsProvider>
+        </Authorized>
+        <NotAuthorized>
+            @Body
+        </NotAuthorized>
+    </AuthorizeView>
+</MApp>
+
+@code {
+
+ 
+}

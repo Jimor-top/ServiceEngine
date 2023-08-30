@@ -1,0 +1,15 @@
+﻿@page "/"
+@layout MainLayout
+@inherits LayoutComponentBase
+@inject NavigationManager Nav
+@attribute [Authorize]
+
+@code {
+    protected override void OnAfterRender(bool firstRender)
+    {
+        if(firstRender)
+        {
+            Nav.NavigateTo("/dashboard/home", false);
+        }
+    }
+}

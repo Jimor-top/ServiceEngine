@@ -1,0 +1,102 @@
+﻿@using Masa.Blazor.Presets
+@inject NavigationManager Nav
+
+<AuthorizeView>
+    <Authorized>
+        <MMenu OffsetX Left OffsetY>
+            <ActivatorContent Context="menuContext">
+                <div class="text-center border-left-solid" style="width:88px;">
+                    <MAvatar @attributes="menuContext.Attrs" Size=40>
+                        <MImage Src="/img/avatar/2.svg"></MImage>
+                    </MAvatar>
+                </div>
+            </ActivatorContent>
+            <ChildContent>
+                <MList Dense>
+                    <MListItem Link Href="/system/userCenter">
+                        <MListItemIcon Class="mr-4">
+                            <MIcon Size=20 Color="neutral-lighten-4">fa:fas fa-user-circle</MIcon>
+                        </MListItemIcon>
+                        <MListItemContent>
+                            <MListItemTitle>
+                                <span class="neutral-lighten-4--text">用户中心</span>
+                            </MListItemTitle>
+                        </MListItemContent>
+                    </MListItem>
+                    <MListItem Link OnClick=LogoutDialog>
+                        <MListItemIcon Class="mr-4">
+                            <MIcon Size=20 Color="neutral-lighten-4">fa:fas fa-sign-in-alt</MIcon>
+                        </MListItemIcon>
+                        <MListItemContent>
+                            <MListItemTitle>
+                                <span class="neutral-lighten-4--text">注销登出</span>
+                            </MListItemTitle>
+                        </MListItemContent>
+                    </MListItem>
+                </MList>
+            </ChildContent>
+        </MMenu>
+        <MDialog @bind-Value="_dialog" 
+                 MaxWidth="400">
+            <MCard>
+                <MCardTitle Class="text-h5">
+                    提示
+                </MCardTitle>
+
+                <MCardText>
+                    <MListItem>
+                        <MListItemAction>
+                            <MIcon Color="orange">md:info</MIcon>
+                        </MListItemAction>
+
+                        <MListItemContent>
+                            <MListItemTitle>此操作将退出登录，是否继续？</MListItemTitle>
+                        </MListItemContent>
+                    </MListItem>
+                </MCardText>
+
+                <MCardActions>
+                    <MSpacer></MSpacer>
+
+                    <MButton Color="green darken-1"
+                              Text
+                             OnClick="()=> _dialog = false">
+                        取消
+                    </MButton>
+
+                    <MButton Color="error"
+                             Text Loading="@(_loading)" 
+                             Disabled="@(_loading)"
+                             OnClick="LogoutSubmit">
+                        确认
+                    </MButton>
+                </MCardActions>
+            </MCard>
+        </MDialog>
+    </Authorized>
+    <NotAuthorized>
+        <MMenu OffsetX Left OffsetY>
+            <ActivatorContent Context="menuContext">
+                <div class="text-center border-left-solid" style="width:88px;">
+                    <MAvatar @attributes="menuContext.Attrs" Size=40>
+                        <MImage Src="/img/avatar/2.svg"></MImage>
+                    </MAvatar>
+                </div>
+            </ActivatorContent>
+            <ChildContent>
+                <MList Dense>
+                    <MListItem Link Href="/login">
+                        <MListItemIcon Class="mr-4">
+                            <MIcon Size=20 Color="neutral-lighten-4">fas fa-user-circle</MIcon>
+                        </MListItemIcon>
+                        <MListItemContent>
+                            <MListItemTitle>
+                                <span class="neutral-lighten-4--text">登录</span>
+                            </MListItemTitle>
+                        </MListItemContent>
+                    </MListItem>
+                </MList>
+            </ChildContent>
+        </MMenu>
+    </NotAuthorized>
+</AuthorizeView>
