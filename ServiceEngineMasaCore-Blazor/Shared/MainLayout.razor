@@ -1,14 +1,13 @@
 ﻿@using System.Globalization
 @using System.Runtime.InteropServices
 @inherits LayoutComponentBase
-@inject I18n I18n
-@inject IJSRuntime jsRuntime
+@inject GlobalConfig GlobalConfig
 
 <MApp>
     <AuthorizeView>
         <Authorized>
             <PPageTabsProvider>
-                <CascadingValue Value="I18n.Culture.Name" Name="CultureName">
+                <CascadingValue Value="GlobalConfig.Culture.Name" Name="CultureName">
                     <MAppBar Elevation=0 App Height="100" Class="default-app-bar mx-6">
                         <div class="default-app-bar__actions @PageModeClass">
                             <Favorite />

@@ -18,7 +18,7 @@ namespace ServiceEngineMasaCore.Blazor.Pages.App.PlatformManagement
         private object? _CpuGaugeData;
         List<object?> dickGaugeDataList = new List<object?>();
         IEnumerable<BlockTextTag> _tags = new List<BlockTextTag>();
-        Timer _timer;
+        Timer? _timer;
         protected override async Task OnAfterRenderAsync(bool firstRender)
         {
             if (firstRender)
@@ -28,7 +28,7 @@ namespace ServiceEngineMasaCore.Blazor.Pages.App.PlatformManagement
                 await LoadServerBaseAsync();
                 await LoadServerUsedAsync();
                 await LoadServerAssemblyListAsync();
-                _timer = new Timer(async (object? state) => { await LoadServerUsedAsync(); InvokeAsync(StateHasChanged); }, null, Timeout.Infinite, Timeout.Infinite);
+                _timer = new Timer(async (object? state) => { await LoadServerUsedAsync();}, null, Timeout.Infinite, Timeout.Infinite);
                 _timer.Change(5000, 10000);
                 StateHasChanged();
             }
@@ -63,22 +63,34 @@ namespace ServiceEngineMasaCore.Blazor.Pages.App.PlatformManagement
 
         async Task LoadServerUsedAsync() {
             var usedInfoRes = await _sysServerService.GetSysServerUsedAsync();
-            if (usedInfoRes != null)
-                _usedInfo = JsonConvert.DeserializeObject<dynamic>(Convert.ToString(usedInfoRes.Result));
+            if (usedInfoRes != null) {
+                try
+                {
+                    _usedInfo = JsonConvert.DeserializeObject<dynamic>(Convert.ToString(usedInfoRes.Result));
+                }
+                catch
+                {
+
+                }
+            }
             string memoryData = "0";
-            if (_usedInfo?.ramRate != null)
+            string usedRam = "null";
+            string freeRam = "null";
+            if (_usedInfo != null &&_usedInfo?.ramRate != null)
             {
                 memoryData = ((string)_usedInfo?.ramRate)[0..^1];
+                usedRam = _usedInfo?.usedRam;
+                freeRam = _usedInfo?.freeRam;
             }
             _MemoryGaugeData = new[] {
-                    new{
-                        Value = memoryData,
-                        Name = $"已用:{_usedInfo?.usedRam}\n" +
-                        $"剩余:{_usedInfo?.freeRam}\n"+"内存使用率"
-                    }
-                };
+                new{
+                    Value = memoryData,
+                    Name = $"已用:{usedRam}\n" +
+                    $"剩余:{freeRam}\n"+"内存使用率"
+                }
+            };
             string cpuData = "0";
-            if (_usedInfo?.cpuRate != null)
+            if (_usedInfo != null &&_usedInfo?.cpuRate != null)
             {
                 cpuData = ((string)_usedInfo?.cpuRate)[0..^1];
             }
@@ -95,7 +107,7 @@ namespace ServiceEngineMasaCore.Blazor.Pages.App.PlatformManagement
             var assemblyListRes = await _sysServerService.GetSysServerAssemblyListAsync();
             if (assemblyListRes != null)
                 _assemblyList = JsonConvert.DeserializeObject<dynamic>(Convert.ToString(assemblyListRes.Result));
-
+            if (_assemblyList == null) return;
             List<BlockTextTag> tagList = _tags.ToList();
             foreach (var item in _assemblyList)
             {
@@ -110,7 +122,10 @@ namespace ServiceEngineMasaCore.Blazor.Pages.App.PlatformManagement
 
         public void Dispose()
         {
-            _timer.Dispose();
+            if (_timer != null) {
+                _timer.Change(Timeout.Infinite,Timeout.Infinite);
+                _timer.Dispose();
+            }
         }
     }
 }

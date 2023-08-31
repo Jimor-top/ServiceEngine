@@ -1,4 +1,7 @@
-﻿using Newtonsoft.Json;
+﻿using Masa.Blazor.Presets;
+using Nest;
+using Newtonsoft.Json;
+using OfficeOpenXml.FormulaParsing.Excel.Functions.Text;
 using Qiniu.CDN;
 using ServiceEngine.Core;
 using ServiceEngineMasaCore.Blazor.Service.Log.Dto;
@@ -9,6 +12,8 @@ namespace ServiceEngineMasaCore.Blazor.Pages.App.LogManagement
 {
     public partial class AccessLog : IDisposable
     {
+        private PEnqueuedSnackbars? _enqueuedSnackbars;
+
         [Inject]
         [NotNull]
         ISysLogService? _sysLogServices { get; set; }
@@ -20,6 +25,13 @@ namespace ServiceEngineMasaCore.Blazor.Pages.App.LogManagement
         int _tatolPage = 1;
         int _currentPage = 1;
         private string _paginationSelect = "10";
+
+        private DateTime? _startDate;
+        private DateTime? _endDate;
+        bool IsDateAllowed(DateOnly date)
+        {
+            return date >= ( _startDate != null ? new DateOnly(_startDate.Value.Year, _startDate.Value.Month, _startDate.Value.Day):null);
+        }
 
         bool _isLoading = false;
        
@@ -48,8 +60,8 @@ namespace ServiceEngineMasaCore.Blazor.Pages.App.LogManagement
                 {
                     Page = 1,
                     PageSize = int.Parse(_paginationSelect),
-                    StartTime = DateTime.Now.AddDays(-1),
-                    EndTime = DateTime.Now,
+                    StartTime = _startDate != null ? Convert.ToDateTime(_startDate) : DateTime.Now.AddDays(-1),
+                    EndTime = _endDate != null ? Convert.ToDateTime(_endDate) : DateTime.Now,
                 };
                 await LoadData(input);
                 _isLoading = false;
@@ -82,8 +94,8 @@ namespace ServiceEngineMasaCore.Blazor.Pages.App.LogManagement
             {
                 Page = value,
                 PageSize = int.Parse(_paginationSelect),
-                StartTime = DateTime.Now.AddDays(-1),
-                EndTime = DateTime.Now,
+                StartTime = _startDate != null ? Convert.ToDateTime(_startDate) : DateTime.Now.AddDays(-1),
+                EndTime = _endDate != null ? Convert.ToDateTime(_endDate) : DateTime.Now,
             };
             await LoadData(input);
         }
@@ -94,10 +106,45 @@ namespace ServiceEngineMasaCore.Blazor.Pages.App.LogManagement
             {
                 Page = 1,
                 PageSize = int.Parse(value),
-                StartTime = DateTime.Now.AddDays(-1),
-                EndTime = DateTime.Now,
+                StartTime = _startDate != null ? Convert.ToDateTime(_startDate) : DateTime.Now.AddDays(-1),
+                EndTime = _endDate != null ? Convert.ToDateTime(_endDate) : DateTime.Now,
             };
             await LoadData(input);
+        }
+        private void ResetOnClick() {
+            _startDate = null;
+            _endDate = null;
+        } 
+        private async Task ClearAllOnClick() { 
+            var res = await _sysLogServices.ClearSysLogVisAsync();
+            if (res != null && res.Result)
+            {
+                _sysLogList.Clear();
+                Enqueue(true, "清空成功");
+            }
+            else {
+                Enqueue(false,"清空失败");
+            }
+        }
+        private async Task QueryOnClick()
+        {
+            input = new PLogInput()
+            {
+                Page = 1,
+                PageSize = int.Parse(_paginationSelect),
+                StartTime = _startDate != null ? Convert.ToDateTime(_startDate) : null,
+                EndTime = _endDate != null ? Convert.ToDateTime(_endDate) : null,
+            };
+            await LoadData(input);
+        }
+        private void Enqueue(bool result, string? context)
+        {
+            _enqueuedSnackbars?.EnqueueSnackbar(new SnackbarOptions()
+            {
+                Content = context,
+                Type = result ? AlertTypes.Success : AlertTypes.Error,
+                Closeable = true
+            });
         }
         public void Dispose()
         {

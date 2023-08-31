@@ -13,7 +13,7 @@ using ServiceEngine.Core;
 
 namespace ServiceEngineMasaCore.Blazor.Shared
 {
-    public partial class Navigation
+    public partial class Navigation : IDisposable
     {
         [Inject]
         public MasaBlazor Masa { get; set; } = default!;
@@ -88,6 +88,7 @@ namespace ServiceEngineMasaCore.Blazor.Shared
         void IDisposable.Dispose()
         {
             _GlobalConfig.NavigationStyleChanged -= NavigationStyleChanged;
+            NavHelper.SameLevelNavs.Clear();    
         }
 
     }

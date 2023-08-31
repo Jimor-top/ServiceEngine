@@ -30,7 +30,7 @@
 
   <ItemGroup>
     <PackageReference Include="Blazored.LocalStorage" Version="4.3.0" />
-    <PackageReference Include="Masa.Blazor" Version="1.0.1" />
+    <PackageReference Include="Masa.Blazor" Version="1.0.3" />
     <PackageReference Include="Microsoft.AspNetCore.SignalR.Client" Version="7.0.9" />
     <PackageReference Include="WebApiClientCore" Version="2.0.4" />
   </ItemGroup>

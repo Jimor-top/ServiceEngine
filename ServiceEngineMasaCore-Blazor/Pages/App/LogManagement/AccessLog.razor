@@ -5,28 +5,56 @@
 @inherits ProComponentBase
 @inject GlobalConfig _GlobalConfig
 
-
+<PEnqueuedSnackbars Closeable=true Position="@SnackPosition.TopCenter" @ref="_enqueuedSnackbars"></PEnqueuedSnackbars>
 <MCard Tile="@(_GlobalConfig.NavigationStyle != NavigationStyles.Rounded)">
     <MRow NoGutters >
         <MCol Md="12">
-            <MRow>
-                <MCol Align="@AlignTypes.Center" class="ml-4">
+            <MRow class="ml-4 mt-2">
+                <MCol Align="@AlignTypes.Center">
                     @*<PBlockText Primary="账号:"></PBlockText>*@
-                    <MTextField TValue="string" Label="@T("Start DateTime")"></MTextField>
+                    <PDateDigitalClockPicker @bind-Value="_startDate"
+                                                        MultiSection=true
+                                                        UseSeconds=true
+                                                        Scrollable=true
+                                                        TimeFormat=TimeFormat.Hr24
+                                                        >
+                                           <ActivatorContent>
+                            <MTextField @bind-Value="_startDate"
+                                        Clearable
+                                        Readonly
+                                        Label="@T("Start DateTime")"
+                                        @attributes="@context.Attrs">
+                            </MTextField>
+                        </ActivatorContent>
+                    </PDateDigitalClockPicker>
                 </MCol>
                 <MCol Align="@AlignTypes.Center">
                     @*<PBlockText Primary="手机号码:"></PBlockText>*@
-                    <MTextField TValue="string" Label="@T("End DateTime")"></MTextField>
+                    <PDateDigitalClockPicker @bind-Value="_endDate"
+                                             MultiSection=true
+                                             UseSeconds=true
+                                             TimeFormat=TimeFormat.Hr24
+                                             Scrollable=true
+                                             AllowedDates="IsDateAllowed">
+                        <ActivatorContent>
+                            <MTextField @bind-Value="_endDate"
+                                            Clearable
+                                            Readonly
+                                        Label="@T("End DateTime")"
+                            @attributes="@context.Attrs">
+                            </MTextField>
+                        </ActivatorContent>
+                    </PDateDigitalClockPicker>
                 </MCol>
                 <MCol Align="@AlignTypes.Center">
-                    <MButton Depressed>@T("Reset")</MButton>
-                    <MButton Depressed>@T("ClearAll")</MButton>
-                    <MButton Depressed>@T("Query")</MButton>
+                    <MButton Depressed OnClick="ResetOnClick">@T("Reset")</MButton>
+                    <MButton Depressed OnClick="ClearAllOnClick">@T("ClearAll")</MButton>
+                    <MButton Depressed OnClick="QueryOnClick">@T("Query")</MButton>
                 </MCol>
             </MRow>
             <MRow>
                 <MCol Cols="12">
-                    <MDataTable Headers="_headers" Items="_sysLogList" TItem="SysLogVis" FixedHeader=true HideDefaultFooter Class="elevation-1" Style="width: 100%;height:calc(100vh - 280px);overflow-y:auto;" ItemsPerPage="100" Loading="_isLoading">
+                    <MDataTable Headers="_headers" Items="_sysLogList" TItem="SysLogVis" FixedHeader=true HideDefaultFooter Class="elevation-1" Style="width: 100%;height:calc(100vh - 300px);overflow-y:auto;" ItemsPerPage="100" Loading="_isLoading">
                         <HeaderColContent Context="header">
                             <span class="text-subtitle">@header.Text</span>
                         </HeaderColContent>

@@ -1,27 +1,33 @@
-﻿namespace ServiceEngineMasaCore.Blazor.Global
+﻿using Microsoft.JSInterop;
+
+namespace ServiceEngineMasaCore.Blazor.Global
 {
+
     public class GlobalConfig
     {
-        private readonly CookieStorage? _cookieStorage;
+        private readonly I18n _i18n;
+        private readonly CookieStorage _cookieStorage;
 
         private string? _pageMode;
         private bool _expandOnHover;
         private string? _favorite;
         private string? _navigationStyle;
 
-        public GlobalConfig(CookieStorage cookieStorage, IHttpContextAccessor httpContextAccessor)
+        public GlobalConfig(CookieStorage cookieStorage, I18n i18n)
         {
+            _i18n = i18n;
             _cookieStorage = cookieStorage;
-            if (httpContextAccessor.HttpContext is not null) Initialization(httpContextAccessor.HttpContext.Request.Cookies);
         }
 
-        public static string PageModeKey { get; set; } = "GlobalConfig_PageMode";
+        public static string PageModeKey => "GlobalConfig_PageMode";
 
-        public static string NavigationStyleKey { get; set; } = "GlobalConfig_NavigationStyle";
+        public static string NavigationStyleKey => "GlobalConfig_NavigationStyle";
 
-        public static string ExpandOnHoverCookieKey { get; set; } = "GlobalConfig_ExpandOnHover";
+        public static string ExpandOnHoverCookieKey => "GlobalConfig_ExpandOnHover";
 
-        public static string FavoriteCookieKey { get; set; } = "GlobalConfig_Favorite";
+        public static string FavoriteCookieKey => "GlobalConfig_Favorite";
+
+        public static string LangCookieKey => "GlobalConfig_Lang";
 
         public EventHandler? NavigationStyleChanged { get; set; }
 
@@ -31,7 +37,7 @@
             set
             {
                 _pageMode = value;
-                _cookieStorage?.SetItemAsync(PageModeKey, value);
+                _cookieStorage.SetAsync(PageModeKey, value);
             }
         }
 
@@ -42,7 +48,7 @@
             {
                 _navigationStyle = value;
                 NavigationStyleChanged?.Invoke(this, EventArgs.Empty);
-                _cookieStorage?.SetItemAsync(NavigationStyleKey, value);
+                _cookieStorage.SetAsync(NavigationStyleKey, value);
             }
         }
 
@@ -52,7 +58,7 @@
             set
             {
                 _expandOnHover = value;
-                _cookieStorage?.SetItemAsync(ExpandOnHoverCookieKey, value);
+                _cookieStorage.SetAsync(ExpandOnHoverCookieKey, value);
             }
         }
 
@@ -62,16 +68,58 @@
             set
             {
                 _favorite = value;
-                _cookieStorage?.SetItemAsync(FavoriteCookieKey, value);
+                _cookieStorage.SetAsync(FavoriteCookieKey, value);
             }
         }
 
-        public void Initialization(IRequestCookieCollection cookies)
+        public CultureInfo Culture
         {
-            _pageMode = cookies[PageModeKey];
-            _navigationStyle = cookies[NavigationStyleKey];
-            _expandOnHover = Convert.ToBoolean(cookies[ExpandOnHoverCookieKey]);
-            _favorite = cookies[FavoriteCookieKey];
+            get => _i18n.Culture;
+            set
+            {
+                _cookieStorage.SetAsync(LangCookieKey, value.Name);
+                _i18n.SetCulture(value);
+            }
+        }
+
+        public async Task InitFromStorage()
+        {
+            _pageMode = await _cookieStorage.GetAsync(PageModeKey);
+            _navigationStyle = await _cookieStorage.GetAsync(NavigationStyleKey);
+            _expandOnHover = Convert.ToBoolean(await _cookieStorage.GetAsync(ExpandOnHoverCookieKey));
+            _favorite = await _cookieStorage.GetAsync(FavoriteCookieKey);
+
+            var lang = await _cookieStorage.GetAsync(LangCookieKey);
+            if (!string.IsNullOrWhiteSpace(lang))
+            {
+                _i18n.SetCulture(new CultureInfo(lang));
+            }
+        }
+    }
+    public class CookieStorage
+    {
+        private readonly IJSRuntime _jsRuntime;
+
+        public CookieStorage(IJSRuntime jsRuntime)
+        {
+            _jsRuntime = jsRuntime;
+        }
+
+        public async Task<string> GetAsync(string key)
+        {
+            return await _jsRuntime.InvokeAsync<string>(JsInteropConstants.GetCookie, key);
+        }
+
+        public async void SetAsync<T>(string key, T? value)
+        {
+            try
+            {
+                await _jsRuntime.InvokeVoidAsync(JsInteropConstants.SetCookie, key, value?.ToString());
+            }
+            catch
+            {
+                // ignored
+            }
         }
     }
 }
