@@ -5,22 +5,23 @@
 @inherits ProComponentBase
 @inject GlobalConfig _GlobalConfig
 
+<PEnqueuedSnackbars Closeable=true Position="@SnackPosition.TopCenter" @ref="_enqueuedSnackbars"></PEnqueuedSnackbars>
 <MCard Tile="@(_GlobalConfig.NavigationStyle != NavigationStyles.Rounded)">
     <MRow NoGutters>
         <MCol Md="12">
             <MRow>
                 <MCol Align="@AlignTypes.Center" class="ml-4">
                     @*<PBlockText Primary="账号:"></PBlockText>*@
-                    <MTextField TValue="string" Label="@T("Role Name")"></MTextField>
+                    <MTextField TValue="string" Label="@T("Role Name")" @bind-Value="_name" Clearable></MTextField>
                 </MCol>
                 <MCol Align="@AlignTypes.Center">
                     @*<PBlockText Primary="手机号码:"></PBlockText>*@
-                    <MTextField TValue="string" Label="@T("Role Code")"></MTextField>
+                    <MTextField TValue="string" Label="@T("Role Code")" @bind-Value="_code" Clearable></MTextField>
                 </MCol>
                 <MCol Align="@AlignTypes.Center">
-                    <MButton Depressed>@T("Reset")</MButton>
-                    <MButton Depressed>@T("Add")</MButton>
-                    <MButton Depressed>@T("Query")</MButton>
+                    <MButton Depressed OnClick="ResetOnClick">@T("Reset")</MButton>
+                    <MButton Depressed OnClick="AddRoleOnClick">@T("Add")</MButton>
+                    <MButton Depressed OnClick="QueryOnClick">@T("Query")</MButton>
                 </MCol>
             </MRow>
             <MRow>
@@ -57,6 +58,32 @@
                                     };
                                     <PBlockText Tags="@tags" class="custom-pblocktext"></PBlockText>
                                     break;
+                                case "Action":
+                                    <MIcon Small
+                                           Class="mr-2"
+                                           OnClick="()=>EditRoleOnClick(context.Item)">mdi-pencil</MIcon>
+
+                                    <MMenu Right Bottom class="mr-2" OpenOnHover=true>
+                                        <ActivatorContent Context="activatorContext">
+                                            <MButton Icon @attributes="@activatorContext.Attrs">
+                                                <MIcon Small>mdi mdi-dots-horizontal</MIcon>
+                                        </MButton>
+                                    </ActivatorContent>
+                                    <ChildContent>
+                                        <MList>
+                                            <MListItem OnClick="()=>DataRangeSetOnClick(context.Item)">
+                                                <MIcon Small>mdi-pencil-outline</MIcon>
+                                                <MListItemTitle Class="ml-2"> @T("Data Range") </MListItemTitle>
+                                            </MListItem>
+                                            <MListItem OnClick="()=>DltRoleOnClick(context.Item)">
+                                                <MIcon Small>mdi-trash-can-outline</MIcon>
+                                                <MListItemTitle Class="ml-2"> @T("Delete") </MListItemTitle>
+                                            </MListItem>
+                                        </MList>
+                                    </ChildContent>
+                                </MMenu>
+
+                                    break;
                                 default:
                                     @context.Value
                                     break;
@@ -83,10 +110,219 @@
     </MRow>
 </MCard>
 
+<MDialog @bind-Value="_dialog" MaxWidth="850" Scrollable>
+    <MCard Tile="@(_GlobalConfig.NavigationStyle != NavigationStyles.Rounded)">
+        <MCardTitle>
+            <PBlockText>
+                <PrimaryContent>
+                    <MIcon>mdi mdi-square-edit-outline</MIcon>
+                    @_dialogTitle
+                </PrimaryContent>
+            </PBlockText>
+        </MCardTitle>
+
+        <MCardText>
+            @if (_dialogTitle.Equals("授权数据范围"))
+            {
+                <MRow>
+                    <MCol Cols="12">
+                        <span>数据范围:</span>
+                    </MCol>
+                </MRow>
+                <MRow>
+                    <MCol Cols="12">
+                        <MSelect @bind-Value="_dataScopeRoleInput.DataScope"
+                                 Items="_dataScopeEnum"
+                                 TItem="DataScopeEnum"
+                                 TItemValue="int"
+                                 TValue="int"
+                                 ItemValue="r=>(int)r"
+                                 ItemText="r=>r.GetDescription()"
+                                 Style="margin:2px;"
+                              Clearable
+                              Outlined
+                                 Placeholder="请选择数据范围"
+                              Dense>
+                    </MSelect>
+                </MCol>
+                </MRow>
+                if (_dataScopeRoleInput.DataScope == 5)
+                {
+                    <MRow>
+                        <MCol Cols="12">
+                            <span>机构列表:</span>
+                        </MCol>
+                    </MRow>
+                    <MRow>
+                        <MCol Cols="12">
+                            <MTreeview @bind-Value="_dataScopeRoleInput.OrgIdList"
+                                       Items="_sysOrgList"
+                                       Activatable
+                                       Selectable
+                                       OpenOnClick
+                                       ItemText="r=>r.Name"
+                                       ItemKey="r=>r.Id"
+                                       ItemChildren="r=>r.Children">
+                                <PrependContent>
+                                    @if (context.Item.Children == null)
+                                    {
+                                        <MIcon>
+                                            mdi-account
+                                        </MIcon>
+                                    }
+                                </PrependContent>
+                            </MTreeview>
+                        </MCol>
+                    </MRow>
+                }
+            }
+            else
+            {
+                <MForm Model="@_updateRoleInput">
+                    <MRow Class="mt-2">
+                        <MCol Cols="12">
+                            <MRow>
+                                <MCol Cols="2"><MSubheader Style="padding:0px;"><span style="color:red;">*</span>角色名称:</MSubheader></MCol>
+                            <MCol Cols="10"><MTextField TValue="string" Style="margin:2px;" @bind-Value="@_updateRoleInput.Name" Placeholder="请输入角色名称" HideDetails="@("auto")" Outlined Clearable Dense></MTextField></MCol>
+                            </MRow>
+                        </MCol>
+                    </MRow>
+                    <MRow>
+                        <MCol Cols="12">
+                            <MRow>
+                                <MCol Cols="2"><MSubheader Style="padding:0px;"><span style="color:red;">*</span>角色编码:</MSubheader></MCol>
+                                <MCol Cols="10"><MTextField TValue="string" Style="margin:2px;" @bind-Value="@_updateRoleInput.Code" Placeholder="请输入角色编码" HideDetails="@("auto")" Outlined Clearable Dense></MTextField></MCol>
+                            </MRow>
+                        </MCol>
+                    </MRow>
+                    <MRow>
+                        <MCol Cols="6">
+                            <MRow>
+                                <MCol Cols="3"><MSubheader Style="padding:0px;">排序:</MSubheader></MCol>
+                                <MCol Cols="9">
+                                    <MTextField @bind-Value="@_updateRoleInput.OrderNo"
+                                                PrependIcon="mdi mdi-minus"
+                                                AppendOuterIcon="mdi mdi-plus"
+                                                OnPrependClick="()=>_updateRoleInput.OrderNo--"
+                                                OnAppendOuterClick="()=>_updateRoleInput.OrderNo++"
+                                                TValue="int"
+                                                Style="text-align: center"
+                                                class="centered-text"
+                                                Placeholder="排序"
+                                                Outlined
+                                                Dense />
+                                </MCol>
+                            </MRow>
+                        </MCol>
+                        <MCol Cols="6">
+                            <MRow>
+                                <MCol Cols="3"><MSubheader Style="padding:0px;">状态:</MSubheader></MCol>
+                                <MCol Cols="9">
+                                    <MRadioGroup @bind-Value="@_updateRoleInput.Status" Style="margin:8px;" Row Dense>
+                                    <MRadio Label="@T("Enable")" Value="@(StatusEnum.Enable)"></MRadio>
+                                    <MRadio Label="@T("Disable")" Value="@(StatusEnum.Disable)"></MRadio>
+                                </MRadioGroup>
+                                </MCol>
+                            </MRow>
+                        </MCol>
+                    </MRow>
+                    <MRow>
+                        <MCol Cols="12">
+                            <MRow>
+                                <MCol Cols="2"><MSubheader Style="padding:0px;">备注:</MSubheader></MCol>
+                                <MCol Cols="10">
+                                <MTextarea @bind-Value="@_updateRoleInput.Remark"
+                                                Rows="2"
+                                                RowHeight="20"
+                                                AutoGrow
+                                                Style="margin:2px;"
+                                                Placeholder="请输入备注"
+                                                Outlined
+                                                Clearable>
+                                    </MTextarea>
+                                </MCol>
+                            </MRow>
+                        </MCol>
+                    </MRow>
+                <MRow>
+                    <MCol Cols="12">
+                        <MRow>
+                            <MCol Cols="2"><MSubheader Style="padding:0px;">菜单权限:</MSubheader></MCol>
+                            <MCol Cols="10">
+                                <MTreeview @bind-Value="_updateRoleInput.MenuIdList"
+                                           Items="_sysMenu"
+                                           Activatable
+                                           Selectable
+                                           OpenOnClick
+                                           OpenAll
+                                           ItemText="r=>r.Title"
+                                           ItemKey="r=>r.Id"
+                                           ItemChildren="r=>r.Children"
+                                               Class="mtreeview-flex-child"
+                                           Dense 
+                                            >
+                                </MTreeview>
+                            </MCol>
+                        </MRow>
+                    </MCol>
+                </MRow>
+                </MForm>
+            }
+        </MCardText>
+
+        <MCardActions>
+            <MSpacer></MSpacer>
+
+            <MButton Color="green darken-1"
+                     Text
+                     OnClick="()=> _dialog = false">
+                取消
+            </MButton>
+
+            <MButton Color="error"
+                     Text
+                     OnClick="SubmitOnClick"
+                    >
+                确认
+            </MButton>
+        </MCardActions>
+    </MCard>
+</MDialog>
+
 <style>
     .custom-pblocktext   span {
         padding: 4px !important;
         height: 26px !important;
         font-size: 16px !important;
     }
+
+     .centered-text input {
+        text-align: center;
+    }
+
+    .horizontal-treeview ul:last-child {
+        display: flex !important;
+        flex-wrap: wrap !important;
+    }
+
+    .m-treeview-node__label:last-child {
+        display: inline-block !important;
+    }
+
+    /* 最后一个节点的子节点水平排列 */
+    .mtreeview-item:last-child > .mtreeview-children {
+        flex-direction: row;
+        justify-content: flex-start;
+    }
+
+        /* 最后一个节点的子节点水平排列后的展开和折叠按钮样式 */
+        .mtreeview-item:last-child > .mtreeview-children .mtreeview-toggle {
+            margin-inline: 0;
+        }
+
+    .mtreeview-flex-child div div div div {
+        display: flex;
+        flex-wrap: wrap;
+     
+    } 
 </style>

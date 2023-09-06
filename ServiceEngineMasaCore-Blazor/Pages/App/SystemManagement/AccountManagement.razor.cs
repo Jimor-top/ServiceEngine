@@ -236,6 +236,7 @@ namespace ServiceEngineMasaCore.Blazor.Pages.App.SystemManagement
             {
                 _userInput.ExtOrgIdList = res3.Result;
             }
+            StateHasChanged();
         }
         private async Task DltUserOnClick(string account,long id,long orgId)
         {

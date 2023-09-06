@@ -94,6 +94,7 @@ public class SysUser : EntityTenant
     /// </summary>
     [SugarColumn(ColumnDescription = "邮箱", Length = 64)]
     [MaxLength(64)]
+    [EmailAddress]
     public string? Email { get; set; }
 
     /// <summary>

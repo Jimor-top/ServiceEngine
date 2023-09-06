@@ -27,6 +27,7 @@ public class AddRoleInput : SysRole
     /// 名称
     /// </summary>
     [Required(ErrorMessage = "角色名称不能为空")]
+    [RegularExpression("True", ErrorMessage = "角色名称不能为空")]
     public override string Name { get; set; }
 
     /// <summary>
