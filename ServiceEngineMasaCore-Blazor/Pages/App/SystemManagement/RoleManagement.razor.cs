@@ -12,6 +12,10 @@ namespace ServiceEngineMasaCore.Blazor.Pages.App.SystemManagement
     {
         [Inject]
         [NotNull]
+        IPopupService? _popupService { get; set; }
+
+        [Inject]
+        [NotNull]
         ISysRoleService? _sysRoleService { get; set; }
 
         List<SysRole> _sysRoleList = new List<SysRole>();
@@ -46,7 +50,9 @@ namespace ServiceEngineMasaCore.Blazor.Pages.App.SystemManagement
                     PageSize = int.Parse(_paginationSelect),
                 };
                 _isLoading = true;
+                _popupService.ShowProgressLinear();
                 await LoadData(input);
+                _popupService.HideProgressLinear();
                 _isLoading = false;
                 StateHasChanged();
             }

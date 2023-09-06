@@ -12,6 +12,10 @@ namespace ServiceEngineMasaCore.Blazor.Pages.App.PlatformManagement
     {
         [Inject]
         [NotNull]
+        IPopupService? _popupService { get; set; }
+
+        [Inject]
+        [NotNull]
         ISysDictDataService? _sysDictDataService { get; set; }
 
         List<SysDictData> _sysDictDataList = new List<SysDictData>();
@@ -44,8 +48,9 @@ namespace ServiceEngineMasaCore.Blazor.Pages.App.PlatformManagement
                     Page = 1,
                     PageSize = int.Parse(_paginationSelect),
                 };
+                _popupService.ShowProgressLinear();
                 await LoadData(input);
-
+                _popupService.HideProgressLinear();
                 StateHasChanged();
             }
             await base.OnAfterRenderAsync(firstRender);

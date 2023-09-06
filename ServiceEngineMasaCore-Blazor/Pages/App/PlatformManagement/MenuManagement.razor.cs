@@ -9,6 +9,10 @@ namespace ServiceEngineMasaCore.Blazor.Pages.App.PlatformManagement
     {
         [Inject]
         [NotNull]
+        IPopupService? _popupService { get; set; }
+
+        [Inject]
+        [NotNull]
         ISysMenuService? _sysMenuService { get; set; }
 
         List<SysMenu> _sysMenuList = new List<SysMenu>();
@@ -37,11 +41,13 @@ namespace ServiceEngineMasaCore.Blazor.Pages.App.PlatformManagement
             {
                 _GlobalConfig.NavigationStyleChanged += NavigationStyleChanged;
                 _isLoading = true;
+                _popupService.ShowProgressLinear();
                 var res = await _sysMenuService.GetSysMenuListAsync(input.Title, input.Type);
                 if (res != null && res.Result != null)
                 {
                     _sysMenuList.AddRange(res.Result);
                 }
+                _popupService.HideProgressLinear();
                 _isLoading = false;
                 StateHasChanged();
             }

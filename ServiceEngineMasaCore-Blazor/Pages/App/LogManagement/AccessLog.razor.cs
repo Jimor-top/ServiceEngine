@@ -16,6 +16,10 @@ namespace ServiceEngineMasaCore.Blazor.Pages.App.LogManagement
 
         [Inject]
         [NotNull]
+        IPopupService? _popupService { get; set; }
+
+        [Inject]
+        [NotNull]
         ISysLogService? _sysLogServices { get; set; }
 
         List<SysLogVis> _sysLogList = new List<SysLogVis>();
@@ -56,15 +60,17 @@ namespace ServiceEngineMasaCore.Blazor.Pages.App.LogManagement
             {
                 _GlobalConfig.NavigationStyleChanged += NavigationStyleChanged;
                 _isLoading = true;
+                _popupService.ShowProgressLinear();
                 input = new PLogInput()
                 {
                     Page = 1,
                     PageSize = int.Parse(_paginationSelect),
-                    StartTime = _startDate != null ? Convert.ToDateTime(_startDate) : DateTime.Now.AddDays(-1),
-                    EndTime = _endDate != null ? Convert.ToDateTime(_endDate) : DateTime.Now,
+                    StartTime = _startDate != null ? Convert.ToDateTime(_startDate) : null,
+                    EndTime = _endDate != null ? Convert.ToDateTime(_endDate) : null,
                 };
                 await LoadData(input);
                 _isLoading = false;
+                _popupService.HideProgressLinear();
                 StateHasChanged();
             }
             await base.OnAfterRenderAsync(firstRender);
@@ -94,8 +100,8 @@ namespace ServiceEngineMasaCore.Blazor.Pages.App.LogManagement
             {
                 Page = value,
                 PageSize = int.Parse(_paginationSelect),
-                StartTime = _startDate != null ? Convert.ToDateTime(_startDate) : DateTime.Now.AddDays(-1),
-                EndTime = _endDate != null ? Convert.ToDateTime(_endDate) : DateTime.Now,
+                StartTime = _startDate != null ? Convert.ToDateTime(_startDate) : null,
+                EndTime = _endDate != null ? Convert.ToDateTime(_endDate) : null,
             };
             await LoadData(input);
         }
@@ -106,8 +112,8 @@ namespace ServiceEngineMasaCore.Blazor.Pages.App.LogManagement
             {
                 Page = 1,
                 PageSize = int.Parse(value),
-                StartTime = _startDate != null ? Convert.ToDateTime(_startDate) : DateTime.Now.AddDays(-1),
-                EndTime = _endDate != null ? Convert.ToDateTime(_endDate) : DateTime.Now,
+                StartTime = _startDate != null ? Convert.ToDateTime(_startDate) : null,
+                EndTime = _endDate != null ? Convert.ToDateTime(_endDate) : null,
             };
             await LoadData(input);
         }

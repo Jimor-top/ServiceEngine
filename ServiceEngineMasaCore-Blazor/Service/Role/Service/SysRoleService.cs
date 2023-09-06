@@ -1,4 +1,5 @@
 ﻿using ServiceEngine.Core;
+using ServiceEngine.Core.Service;
 using ServiceEngineMasaCore.Blazor.Service.Role.Callers;
 using ServiceEngineMasaCore.Blazor.Service.Role.Dto;
 using ServiceEngineMasaCore.Blazor.Service.Role.Interface;
@@ -14,7 +15,10 @@ namespace ServiceEngineMasaCore.Blazor.Service.Role.Service
         public SysRoleService(IRoleClient client, IPopupService popup) : base(popup)
             => _client = client;
 
+        public Task<AdminResult<List<RoleOutput>>> GetSysRoleListAsync()
+            => HandleErrorAsync(_client.GetSysRoleListAsync());
+
         public Task<AdminResult<SqlSugarPagedList<SysRole>>> GetSysRolePageAsync([JsonContent] PRoleInput input)
-         => HandleErrorAsync(_client.GetSysRolePageAsync(input));
+            => HandleErrorAsync(_client.GetSysRolePageAsync(input));
     }
 }

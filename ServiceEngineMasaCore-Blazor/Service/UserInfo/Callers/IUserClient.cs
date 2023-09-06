@@ -36,22 +36,28 @@ namespace ServiceEngineMasaCore.Blazor.Service.UserInfo.Callers
         /// </summary>
         /// <returns></returns>
         [HttpPost("api/sysUser/baseInfo")]
-        ITask<AdminResult<int>> PostSysUserBaseInfoAsync([JsonContent] SysUser body, CancellationToken token = default);
+        ITask<AdminResult<int>> PostSysUserBaseInfoAsync([JsonContent] SysUser input, CancellationToken token = default);
 
+        /// <summary>
+        /// 设置状态
+        /// </summary>
+        /// <returns></returns>
+        [HttpPost("api/sysUser/setStatus")]
+        ITask<AdminResult<int>> SetSysUserStatusAsync([JsonContent] UInput input, CancellationToken token = default);
 
         /// <summary>
         /// 获取基本信息
         /// </summary>
         /// <returns></returns>
         [HttpPost("api/sysUser/changePwd")]
-        ITask<AdminResult<object>> ChangeSysUserPwd([JsonContent] UserPwdDto body, CancellationToken token = default);
+        ITask<AdminResult<object>> ChangeSysUserPwd([JsonContent] UserPwdDto input, CancellationToken token = default);
 
         /// <summary>
         /// 更新用户信息
         /// </summary>
         /// <returns></returns>
         [HttpPost("api/sysUser/update")]
-        ITask<AdminResult<string>> UpdateSysUserBaseInfoAsync([JsonContent] SysUser body,CancellationToken token = default);
+        ITask<AdminResult<string>> UpdateSysUserBaseInfoAsync([JsonContent] SysUser input, CancellationToken token = default);
 
         /// <summary>
         /// 获取用户配置
@@ -66,5 +72,47 @@ namespace ServiceEngineMasaCore.Blazor.Service.UserInfo.Callers
         /// <returns></returns>
         [HttpPost("api/sysAuth/logout")]
         ITask<AdminResult<object>> SysAuthUserlogoutAsync(CancellationToken token = default);
+
+        /// <summary>
+        /// 重置密码
+        /// </summary>
+        /// <returns></returns>
+        [HttpPost("api/sysUser/resetPwd")]
+        ITask<AdminResult<int>> ResetPwdAsync([JsonContent] ResetPwdInput input,CancellationToken token = default);
+
+        /// <summary>
+        /// 增加用户
+        /// </summary>
+        /// <returns></returns>
+        [HttpPost("api/sysUser/add")]
+        ITask<AdminResult<object>> AddSysUserAsync([JsonContent] AddUserInput input, CancellationToken token = default);
+
+        /// <summary>
+        /// 更新用户
+        /// </summary>
+        /// <returns></returns>
+        [HttpPost("api/sysUser/update")]
+        ITask<AdminResult<object>> UpdateSysUserAsync([JsonContent] UpdateUserInput input, CancellationToken token = default);
+
+        /// <summary>
+        /// 删除用户
+        /// </summary>
+        /// <returns></returns>
+        [HttpPost("api/sysUser/delete")]
+        ITask<AdminResult<object>> DeleteSysUserAsync([JsonContent] DeleteInput input, CancellationToken token = default);
+
+        /// <summary>
+        /// 获取用户角色列表
+        /// </summary>
+        /// <returns></returns>
+        [HttpGet("api/sysUser/ownRoleList/{userId}")]
+        ITask<AdminResult<List<long>>> GetSysUserRoleListAsync(long userId, CancellationToken token = default);
+
+        /// <summary>
+        /// 获取用户附属角色列表
+        /// </summary>
+        /// <returns></returns>
+        [HttpGet("api/sysUser/ownExtOrgList/{userId}")]
+        ITask<AdminResult<List<SysUserExtOrg>>> GetSysUserExtRoleListAsync(long userId, CancellationToken token = default);
     }
 }

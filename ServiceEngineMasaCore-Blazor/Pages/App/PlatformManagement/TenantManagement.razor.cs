@@ -13,6 +13,10 @@ namespace ServiceEngineMasaCore.Blazor.Pages.App.PlatformManagement
     {
         [Inject]
         [NotNull]
+        IPopupService? _popupService { get; set; }
+
+        [Inject]
+        [NotNull]
         ISysTenantService? _sysTenantService { get; set; }
 
         List<TenantOutput> _sysTenantList = new List<TenantOutput>();
@@ -44,14 +48,14 @@ namespace ServiceEngineMasaCore.Blazor.Pages.App.PlatformManagement
             {
                 _GlobalConfig.NavigationStyleChanged += NavigationStyleChanged;
                 _isLoading = true;
-
+                _popupService.ShowProgressLinear();
                 input = new()
                 {
                     Page = 1,
                     PageSize = int.Parse(_paginationSelect),
                 };
                 await LoadData(input);
-                
+                _popupService.HideProgressLinear();
                 StateHasChanged();
             }
             await base.OnAfterRenderAsync(firstRender);

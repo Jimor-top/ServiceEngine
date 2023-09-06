@@ -1,4 +1,5 @@
-﻿using ServiceEngine.Core;
+﻿using Masa.Blazor;
+using ServiceEngine.Core;
 using ServiceEngine.Core.Service;
 using ServiceEngineMasaCore.Blazor.Service.Pos.Interface;
 using ServiceEngineMasaCore.Blazor.Service.Role.Dto;
@@ -8,6 +9,10 @@ namespace ServiceEngineMasaCore.Blazor.Pages.App.SystemManagement
 {
     public partial class PositionManagement : IDisposable
     {
+        [Inject]
+        [NotNull]
+        IPopupService? _popupService { get; set; }
+
         [Inject]
         [NotNull]
         ISysPosService? _sysPosService { get; set; }
@@ -32,8 +37,9 @@ namespace ServiceEngineMasaCore.Blazor.Pages.App.SystemManagement
             {
                 _GlobalConfig.NavigationStyleChanged += NavigationStyleChanged;
                 _isLoading = true;
+                _popupService.ShowProgressLinear();
                 await LoadData(input);
-               
+                _popupService.HideProgressLinear();
                 StateHasChanged();
             }
             await base.OnAfterRenderAsync(firstRender);

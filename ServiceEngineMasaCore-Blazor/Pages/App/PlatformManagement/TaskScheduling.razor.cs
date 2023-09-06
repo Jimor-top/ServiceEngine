@@ -13,6 +13,10 @@ namespace ServiceEngineMasaCore.Blazor.Pages.App.PlatformManagement
     {
         [Inject]
         [NotNull]
+        IPopupService? _popupService { get; set; }
+
+        [Inject]
+        [NotNull]
         ISysJobService? _sysJobService { get; set; }
 
         List<SysJobDetail> _sysJobList = new List<SysJobDetail>();
@@ -42,13 +46,13 @@ namespace ServiceEngineMasaCore.Blazor.Pages.App.PlatformManagement
             {
                 _GlobalConfig.NavigationStyleChanged += NavigationStyleChanged;
                 _isLoading = true;
-
+                _popupService.ShowProgressLinear();
                 input = new() {
                     Page = 1,
                     PageSize = int.Parse(_paginationSelect),
                 };
                 await LoadData(input);
-
+                _popupService.HideProgressLinear();
                 StateHasChanged();
             }
             await base.OnAfterRenderAsync(firstRender);

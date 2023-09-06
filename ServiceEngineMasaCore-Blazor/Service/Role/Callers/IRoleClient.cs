@@ -1,4 +1,5 @@
 ﻿using ServiceEngine.Core;
+using ServiceEngine.Core.Service;
 using ServiceEngineMasaCore.Blazor.JWTAuthentication;
 using ServiceEngineMasaCore.Blazor.Service.Role.Dto;
 using WebApiClientCore;
@@ -15,5 +16,12 @@ namespace ServiceEngineMasaCore.Blazor.Service.Role.Callers
         /// <returns></returns>
         [HttpPost("api/sysRole/page")]
         ITask<AdminResult<SqlSugarPagedList<SysRole>>> GetSysRolePageAsync([JsonContent] PRoleInput input, CancellationToken token = default);
+
+        /// <summary>
+        /// 获取机构列表
+        /// </summary>
+        /// <returns></returns>
+        [HttpGet("api/sysRole/list")]
+        ITask<AdminResult<List<RoleOutput>>> GetSysRoleListAsync(CancellationToken token = default);
     }
 }

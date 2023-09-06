@@ -10,6 +10,10 @@ namespace ServiceEngineMasaCore.Blazor.Pages.App.PlatformManagement
     {
         [Inject]
         [NotNull]
+        IPopupService? _popupService { get; set; }
+
+        [Inject]
+        [NotNull]
         IConfigService? _configService { get; set; }
 
         List<SysConfig> _configList = new List<SysConfig>();
@@ -38,14 +42,14 @@ namespace ServiceEngineMasaCore.Blazor.Pages.App.PlatformManagement
             {
                 _GlobalConfig.NavigationStyleChanged += NavigationStyleChanged;
                 _isLoading = true;
-
+                _popupService.ShowProgressLinear();
                 input = new()
                 {
                     Page = 1,
                     PageSize = int.Parse(_paginationSelect),
                 };
                 await LoadData(input);
-
+                _popupService.HideProgressLinear();
                 StateHasChanged();
             }
             await base.OnAfterRenderAsync(firstRender);

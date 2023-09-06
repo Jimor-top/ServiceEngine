@@ -1,4 +1,5 @@
 ﻿using Furion.JsonSerialization;
+using Masa.Blazor;
 using Nest;
 using NewLife.Reflection;
 using Newtonsoft.Json;
@@ -13,6 +14,10 @@ namespace ServiceEngineMasaCore.Blazor.Pages.App.PlatformManagement
 {
     public partial class CacheManagement : IDisposable
     {
+        [Inject]
+        [NotNull]
+        IPopupService? _popupService { get; set; }
+
         [Inject]
         [NotNull]
         ISysCacheService? _sysCacheService { get; set; }
@@ -41,7 +46,7 @@ namespace ServiceEngineMasaCore.Blazor.Pages.App.PlatformManagement
             if (firstRender)
             {
                 _GlobalConfig.NavigationStyleChanged += NavigationStyleChanged;
-
+                _popupService.ShowProgressLinear();
                 var res = await _sysCacheService.GetSysCachePageAsync();
                 if (res != null) {
                     foreach (var item in res.Result)
@@ -74,6 +79,7 @@ namespace ServiceEngineMasaCore.Blazor.Pages.App.PlatformManagement
                         //_sysCacheList.Add(cacheData);
                     }
                 }
+                _popupService.HideProgressLinear();
                 StateHasChanged();
             }
             await base.OnAfterRenderAsync(firstRender);

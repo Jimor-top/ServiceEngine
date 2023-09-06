@@ -1,11 +1,13 @@
 ﻿@page "/system/account"
 @using ServiceEngine.Core;
+@using ServiceEngine.Core.Service;
 @using ServiceEngineMasaCore.Blazor.Pages.Components
 @attribute [Authorize]
 @inherits ProComponentBase
 @inject GlobalConfig _GlobalConfig
 @inject MasaBlazor MasaBlazor
 
+<PEnqueuedSnackbars Closeable=true Position="@SnackPosition.TopCenter" @ref="_enqueuedSnackbars"></PEnqueuedSnackbars>
 <MRow NoGutters >
     <MCol Md="12">
         <MCard Tile="@(_GlobalConfig.NavigationStyle != NavigationStyles.Rounded)">
@@ -13,7 +15,6 @@
                 <MCol Cols="2">
                     <MTreeview Active="_active"
                                Items="_sysOrgList"
-                               OnActiveUpdate="(List<SysOrg> e)=>ActiveUpdated(e)"
                                Activatable
                                OpenOnClick
                                ItemText="r=>r.Name"
@@ -28,11 +29,11 @@
                             }
                         </PrependContent>
                         <LabelContent>
-                            <div class="d-flex justify-space-between align-center">
+                            <div class="d-flex justify-space-between align-center" @onclick="()=>OpenSwitchOrg(context.Item.Id)">
                                 <span>@context.Item.Name</span>
                                 <MMenu Right Bottom class="mr-2">
                                     <ActivatorContent Context="activatorContext">
-                                        <MButton Icon @attributes="@activatorContext.Attrs">
+                                        <MButton Icon @attributes="@activatorContext.Attrs" >
                                             <MIcon Small>mdi mdi-dots-vertical</MIcon>
                                         </MButton>
                                     </ActivatorContent>
@@ -40,7 +41,7 @@
                                         <MList>
                                             <MListItem OnClick="()=>OpenAddDialog(context.Item.Id,context.Item.Name)">
                                                 <MIcon Small>mdi-plus-circle-outline</MIcon>
-                                                <MListItemTitle Class="ml-2"> @T("AddSubordinate") </MListItemTitle>
+                                                <MListItemTitle Class="ml-2"> @T("Add") </MListItemTitle>
                                             </MListItem>
                                             <MListItem>
                                                 <MIcon Small>mdi-pencil-outline</MIcon>
@@ -63,22 +64,22 @@
                         <MRow>
                             <MCol Align="@AlignTypes.Center" class="ml-4">
                                 @*<PBlockText Primary="账号:"></PBlockText>*@
-                                <MTextField TValue="string" Label="@T("Account")"></MTextField>
+                                <MTextField TValue="string" Label="@T("Account")" @bind-Value="_account" Clearable></MTextField>
                             </MCol>
                             <MCol Align="@AlignTypes.Center">
                                 @*<PBlockText Primary="手机号码:"></PBlockText>*@
-                                <MTextField TValue="string" Label="@T("Phone")"></MTextField>
+                                <MTextField TValue="string" Label="@T("Phone")" @bind-Value="_phone" Clearable></MTextField>
                             </MCol>
                             <MCol Align="@AlignTypes.Center">
-                                <MButton Depressed>@T("Reset")</MButton>
-                                <MButton Depressed>@T("Add")</MButton>
-                                <MButton Depressed>@T("Query")</MButton>
+                                <MButton Depressed OnClick="ResetOnClick">@T("Reset")</MButton>
+                                <MButton Depressed OnClick="AddUserOnClick">@T("Add")</MButton>
+                                <MButton Depressed OnClick="QueryOnClick">@T("Query")</MButton>
                             </MCol> 
                         </MRow>
                     </MRow>
                     <MRow>
                         <MCol Cols="12">
-                            <MDataTable Headers="_headers" Items="_sysUserList" TItem="SysUser" HideDefaultFooter Class="elevation-1" Style="width: 100%;" ItemsPerPage="100">
+                            <MDataTable FixedRight Headers="_headers" Items="_sysUserList" TItem="SysUser" HideDefaultFooter Class="elevation-1" Style="width: 100%;" ItemsPerPage="100">
                                 <HeaderColContent Context="header">
                                     <span class="text-subtitle">@header.Text</span>
                                 </HeaderColContent>
@@ -127,14 +128,34 @@
                                             {
                                                 Status = true;
                                             }
-                                            <MSwitch Style="padding:0px;margin:0px;" @bind-Value="Status" Inset></MSwitch>
+
+                                            <MSwitch Style="padding:0px;margin:0px;" @bind-Value="Status" Inset OnChange="SwitchToggledCallback" OnClick="()=>OnSwitchToggled(context.Item.Id)"></MSwitch>
                                             break;
                                         case "Action":
                                             <MIcon Small
                                                    Class="mr-2"
-                                                   >mdi-pencil</MIcon>
-                                            <MIcon Small
-                                                   >mdi-delete</MIcon>
+                                                   OnClick="()=>EditUserOnClick(context.Item)">mdi-pencil</MIcon>
+
+                                            <MMenu Right Bottom class="mr-2" OpenOnHover=true>
+                                                <ActivatorContent Context="activatorContext">
+                                                    <MButton Icon @attributes="@activatorContext.Attrs">
+                                                        <MIcon Small>mdi mdi-dots-horizontal</MIcon>
+                                                </MButton>
+                                                </ActivatorContent>
+                                                <ChildContent>
+                                                    <MList>
+                                                        <MListItem OnClick="()=>ResetPwdOnClick(context.Item.Account,context.Item.Id)">
+                                                            <MIcon Small>mdi-pencil-outline</MIcon>
+                                                            <MListItemTitle Class="ml-2"> @T("Reset Password") </MListItemTitle>
+                                                        </MListItem>
+                                                        <MListItem OnClick="()=>DltUserOnClick(context.Item.Account,context.Item.Id,context.Item.OrgId)">
+                                                            <MIcon Small>mdi-trash-can-outline</MIcon>
+                                                            <MListItemTitle Class="ml-2"> @T("Delete") </MListItemTitle>
+                                                        </MListItem>
+                                                    </MList>
+                                                </ChildContent>
+                                            </MMenu>
+                                          
                                             break;
                                         default:
                                             @context.Value
@@ -163,6 +184,475 @@
         </MCard>
     </MCol>
 </MRow>
+<MDialog @bind-Value="_dialog" MaxWidth="850" Scrollable>
+    <MCard Tile="@(_GlobalConfig.NavigationStyle != NavigationStyles.Rounded)">
+        <MCardTitle>
+            <PBlockText>
+                <PrimaryContent>
+                    <MIcon>mdi mdi-square-edit-outline</MIcon>
+                    @_dialogTitle 
+                </PrimaryContent>
+            </PBlockText>
+        </MCardTitle>
+
+        <MCardText>
+            <MTabs @bind-Value="_tab" BackgroundColor="transparent" Grow >
+                <MTab Class="text-capitalize">@T("Basic Information")</MTab>
+                <MTab Class="text-capitalize">@T("Archival Information")</MTab>
+            </MTabs>
+            <MTabsItems Value="@_tab">
+                <MTabItem>
+                    <MRow Class="mt-2">
+                        <MCol Cols="6">
+                            <MRow>
+                                <MCol Cols="3"><MSubheader Style="padding:0px;"><span style="color:red;">*</span>账号名称:</MSubheader></MCol>
+                                <MCol Cols="9"><MTextField TValue="string" Style="margin:2px;" @bind-Value="_userInput.Account" Placeholder="请输入账号名称" Outlined Clearable Dense></MTextField></MCol>
+                            </MRow>
+                        </MCol>
+                        <MCol Cols="6">
+                            <MRow>
+                                <MCol Cols="3"><MSubheader Style="padding:0px;"><span style="color:red;">*</span>真实姓名:</MSubheader></MCol>
+                                <MCol Cols="9"><MTextField TValue="string" Style="margin:2px;" @bind-Value="_userInput.RealName" Placeholder="请输入真实姓名" Outlined Clearable Dense></MTextField></MCol>
+                            </MRow>
+                        </MCol>
+                    </MRow>
+                    <MRow>
+                        <MCol Cols="6">
+                            <MRow>
+                                <MCol Cols="3"><MSubheader Style="padding:0px;">昵称:</MSubheader></MCol>
+                                <MCol Cols="9"><MTextField TValue="string" Style="margin:2px;" @bind-Value="_userInput.NickName" Placeholder="请输入昵称" Outlined Clearable Dense></MTextField></MCol>
+                            </MRow>
+                        </MCol>
+                        <MCol Cols="6">
+                            <MRow>
+                                <MCol Cols="3"><MSubheader Style="padding:0px;"><span style="color:red;">*</span>手机号码:</MSubheader></MCol>
+                                <MCol Cols="9"><MTextField TValue="string" Style="margin:2px;" @bind-Value="_userInput.Phone" Placeholder="请输入手机号码" Outlined Clearable Dense></MTextField></MCol>
+                            </MRow>
+                        </MCol>
+                    </MRow>
+                    <MRow>
+                        <MCol Cols="6">
+                            <MRow>
+                                <MCol Cols="3"><MSubheader Style="padding:0px;"><span style="color:red;">*</span>出生日期:</MSubheader></MCol>
+                                <MCol Cols="9">
+                                    <MMenu @bind-Value="_TimeMenu1" CloseOnContentClick="false" Transition="scale-transition"
+                                           OffsetY
+                                           MinWidth="@("auto")">
+                                        <ActivatorContent>
+                                            <MTextField @bind-Value="_userInput.Birthday" HideDetails="@("auto")" Placeholder="请选择出生日期" Outlined Clearable Dense @attributes="context.Attrs" />
+                                        </ActivatorContent>
+                                        <ChildContent>
+                                            <MDatePicker @bind-Value="_Date"
+                                                              NoTitle
+                                                              Scrollable>
+                                                <MSpacer></MSpacer>
+                                                <MButton Text
+                                                         Color="primary"
+                                                         OnClick="()=>{_TimeMenu1 = false; }">
+                                                    @T("Cancel")
+                                                </MButton>
+                                                <MButton Text
+                                                         Color="primary" 
+                                                         OnClick="()=> SetBirthdayDateTime()">
+                                                    @T("Confirm")
+                                                </MButton>
+                                            </MDatePicker>
+                                        </ChildContent>
+                                    </MMenu>
+                                </MCol>
+                            </MRow>
+                        </MCol>
+                        <MCol Cols="6">
+                            <MRow>
+                                <MCol Cols="3"><MSubheader Style="padding:0px;">性别:</MSubheader></MCol>
+                                <MCol Cols="9">
+                                    <MRadioGroup @bind-Value="_userInput.Sex" Style="margin:8px;" Row Dense>
+                                        <MRadio Label="@T("Male")" Value="@(GenderEnum.Male)"></MRadio>
+                                        <MRadio Label="@T("Female")" Value="@(GenderEnum.Female)"></MRadio>
+                                    </MRadioGroup>
+                                </MCol>
+                            </MRow>
+                        </MCol>
+                    </MRow>
+                    <MRow> 
+                        <MCol Cols="6">
+                            <MRow>
+                                <MCol Cols="3"><MSubheader Style="padding:0px;"><span style="color:red;">*</span>角色:</MSubheader></MCol>
+                                <MCol Cols="9">
+                                    <MSelect @bind-Value="_userInput.RoleIdList"
+                                             Items="_roleData"
+                                             TItem="RoleOutput"
+                                             TItemValue="long"
+                                             TValue="List<long>"
+                                             ItemValue="r=>r.Id"
+                                             ItemText="r=>r.Name"
+                                             Multiple
+                                             Clearable
+                                             Outlined
+                                             Placeholder="请选择角色"
+                                             Dense>
+                                        <SelectionContent Context="data">
+                                            @if (data.Index == 0)
+                                            {
+                                                <MChip>
+                                                    <span>@data.Item.Name</span>
+                                                </MChip>
+                                            }
+                                            else if (data.Index == 1)
+                                            {
+                                                <MChip>
+                                                    <span>
+                                                    (+@(_userInput.RoleIdList.Count - 1))
+                                                    </span>
+                                                </MChip>
+                                            }
+                                        </SelectionContent>
+                                    </MSelect>
+                                </MCol>
+                            </MRow>
+                        </MCol>
+                        <MCol Cols="6">
+                            <MRow>
+                                <MCol Cols="3"><MSubheader Style="padding:0px;"><span style="color:red;">*</span>排序:</MSubheader></MCol>
+                                <MCol Cols="9">
+                                    <MTextField PrependIcon="mdi mdi-minus"
+                                                AppendOuterIcon="mdi mdi-plus"
+                                                OnPrependClick="()=>_userInput.OrderNo--"
+                                                OnAppendOuterClick="()=>_userInput.OrderNo++"
+                                                @bind-Value="_userInput.OrderNo"
+                                                TValue="int"
+                                                Style="text-align: center"
+                                                class="centered-text"
+                                                Placeholder="排序"
+                                                Outlined
+                                                Dense />
+                                </MCol>
+                            </MRow>
+                        </MCol>
+                    </MRow>
+                    <MRow>
+                        <MCol>
+                            <MDivider Center>机构组织</MDivider>
+                        </MCol>
+                    </MRow>
+                    <MRow>
+                        <MCol Cols="6">
+                            <MRow>
+                                <MCol Cols="3"><MSubheader Style="padding:0px;"><span style="color:red;">*</span>所属机构:</MSubheader></MCol>
+                                <MCol Cols="9">
+                                    <MCascader @bind-Value="_userInput.OrgId"
+                                            TItem="SysOrg"
+                                            TValue="long"
+                                            Dense
+                                            Items="_sysOrgList"
+                                            Placeholder="请选择所属机构"
+                                             Style="margin:2px;"
+                                            ItemText="u => u.Name"
+                                            ItemValue="u => u.Id"
+                                            ItemChildren="u => u.Children">
+                                    </MCascader>
+                                </MCol>
+                            </MRow>
+                        </MCol>
+                        <MCol Cols="6">
+                            <MRow>
+                                <MCol Cols="3"><MSubheader Style="padding:0px;"><span style="color:red;">*</span>职位:</MSubheader></MCol>
+                                <MCol Cols="9">
+                                    <MSelect @bind-Value="_userInput.PosId"
+                                             Items="_posData"
+                                             TItem="SysPos"
+                                             TItemValue="long"
+                                             TValue="long"
+                                             ItemValue="r=>r.Id"
+                                             ItemText="r=>r.Name"
+                                             Style="margin:2px;"
+                                             Clearable
+                                             Outlined
+                                             Placeholder="请选择职位"
+                                             Dense>
+                                    </MSelect>
+                                </MCol>
+                            </MRow>
+                        </MCol>
+                    </MRow>
+                    <MRow>
+                        <MCol Cols="6">
+                            <MRow>
+                                <MCol Cols="3"><MSubheader Style="padding:0px;">工号:</MSubheader></MCol>
+                                <MCol Cols="9"><MTextField TValue="string" Style="margin:2px;" @bind-Value="_userInput.JobNum" Placeholder="请输入工号" Outlined Clearable Dense></MTextField></MCol>
+                            </MRow>
+                        </MCol>
+                        <MCol Cols="6">
+                            <MRow>
+                                <MCol Cols="3"><MSubheader Style="padding:0px;">入职日期:</MSubheader></MCol>
+                                <MCol Cols="9">
+                                    <MMenu @bind-Value="_TimeMenu2" CloseOnContentClick="false" Transition="scale-transition"
+                                           OffsetY
+                                           Style="margin:2px;"
+                                           MinWidth="@("auto")">
+                                        <ActivatorContent>
+                                            <MTextField @bind-Value="_userInput.JoinDate" HideDetails="@("auto")" Placeholder="请选择入职日期" Outlined Clearable Dense @attributes="context.Attrs" />
+                                        </ActivatorContent>
+                                        <ChildContent>
+                                            <MDatePicker @bind-Value="_Date"
+                                                              NoTitle
+                                                              Scrollable>
+                                                <MSpacer></MSpacer>
+                                                <MButton Text
+                                                         Color="primary"
+                                                        OnClick="()=>{_TimeMenu2 = false; }">
+                                                    @T("Cancel")
+                                                </MButton>
+                                                <MButton Text
+                                                         Color="primary"
+                                                         OnClick="()=> SetJoinDateTime()">
+                                                    @T("Confirm")
+                                                </MButton>
+                                            </MDatePicker>
+                                        </ChildContent>
+                                    </MMenu>
+                                </MCol>
+                            </MRow>
+                        </MCol>
+                    </MRow>
+                    <MRow>
+                        <MCol>
+                            <MDivider Center>附属机构</MDivider>
+                        </MCol>
+                    </MRow>
+                    <MRow>
+                        <MCol>
+                            <MButton OnClick="AddExtOrgListOnClick"><MIcon>mdi mdi-plus</MIcon>添加附属机构</MButton><span style="color:red;margin-left:5px;">具有相应组织机构的数据权限</span>
+                        </MCol>
+                    </MRow>
+                    @foreach (var item in _userInput.ExtOrgIdList)
+                    {
+                        <MRow>
+                            <MCol Cols="5">
+                                <MRow>
+                                    <MCol Cols="4"><MSubheader Style="padding:0px;"><span style="color:red;">*</span>所属机构:</MSubheader></MCol>
+                                    <MCol Cols="8">
+                                        <MCascader @bind-Value="item.OrgId"
+                                                   TItem="SysOrg"
+                                                   TValue="long"
+                                                   Dense
+                                                   Items="_sysOrgList"
+                                                   Style="margin:2px;"
+                                                   Placeholder="请选择所属机构"
+                                                   ItemText="u => u.Name"
+                                                   ItemValue="u => u.Id"
+                                                   ItemChildren="u => u.Children">
+                                        </MCascader>
+                                    </MCol>
+                                </MRow>
+                            </MCol>
+                            <MCol Cols="5">
+                                <MRow>
+                                    <MCol Cols="4"><MSubheader Style="padding:0px;"><span style="color:red;">*</span>职位:</MSubheader></MCol>
+                                    <MCol Cols="8">
+                                        <MSelect @bind-Value="item.PosId"
+                                                 Items="_posData"
+                                                 TItem="SysPos"
+                                                 TItemValue="long"
+                                                 TValue="long"
+                                                 ItemValue="r=>r.Id"
+                                                 ItemText="r=>r.Name"
+                                                 Style="margin:2px;"
+                                                 Clearable
+                                                 Outlined
+                                                 Placeholder="请选择职位"
+                                                 Dense>
+                                        </MSelect>
+                                    </MCol>
+                                </MRow>
+                            </MCol>
+                            <MCol Cols="2">
+                                <MSubheader>
+                                <MButton Fab Small OnClick="()=>DltExtOrgListOnClick(item)">
+                                        <MIcon Style="color:red;">mdi mdi-delete-circle</MIcon>
+                                    </MButton>
+                                </MSubheader>
+                            </MCol>
+                        </MRow>
+                    }
+                </MTabItem>
+                <MTabItem>
+                    <MRow Class="mt-2">
+                        <MCol Cols="6">
+                            <MRow>
+                                <MCol Cols="3"><MSubheader Style="padding:0px;">证件类型:</MSubheader></MCol>
+                                <MCol Cols="9">
+                                    <MSelect @bind-Value="_userInput.CardType"
+                                            Items="_cardTypeOptions"
+                                             TItem="CardTypeEnum"
+                                             TItemValue="CardTypeEnum"
+                                             TValue="CardTypeEnum"
+                                             ItemValue="r=>r"
+                                             ItemText="r=>r.GetDescription()"
+                                             Style="margin:2px;"
+                                             Clearable
+                                             Outlined
+                                             Placeholder="请选择证件类型"
+                                             Dense>
+                                            
+                                    </MSelect>
+                                </MCol>
+                            </MRow>
+                        </MCol>
+                        <MCol Cols="6">
+                            <MRow>
+                                <MCol Cols="3"><MSubheader Style="padding:0px;">证件号码:</MSubheader></MCol>
+                                <MCol Cols="9"><MTextField TValue="string" Style="margin:2px;" @bind-Value="_userInput.IdCardNum" Placeholder="请输入证件号码" Outlined Clearable Dense></MTextField></MCol>
+                            </MRow>
+                        </MCol>
+                    </MRow>
+                    <MRow>
+                        <MCol Cols="6">
+                            <MRow>
+                                <MCol Cols="3"><MSubheader Style="padding:0px;">民族:</MSubheader></MCol>
+                                <MCol Cols="9"><MTextField TValue="string" Style="margin:2px;" @bind-Value="_userInput.Nation" Placeholder="请输入民族" Outlined Clearable Dense></MTextField></MCol>
+                            </MRow>
+                        </MCol>
+                        <MCol Cols="6">
+                            <MRow>
+                                <MCol Cols="3"><MSubheader Style="padding:0px;">邮箱:</MSubheader></MCol>
+                                <MCol Cols="9"><MTextField TValue="string" Style="margin:2px;" @bind-Value="_userInput.Email" Placeholder="请输入邮箱" Outlined Clearable Dense></MTextField></MCol>
+                            </MRow>
+                        </MCol>
+                    </MRow>
+                    <MRow>
+                        <MCol Cols="12">
+                            <MRow>
+                                <MCol Cols="2"><MSubheader Style="padding:0px;">地址:</MSubheader></MCol>
+                                <MCol Cols="10">
+                                    <MTextarea Rows="2"
+                                               RowHeight="20" 
+                                               AutoGrow 
+                                               Style="margin:2px;"
+                                               @bind-Value="_userInput.Address"
+                                               Placeholder="请输入地址" 
+                                               Outlined 
+                                               Clearable 
+                                               >
+                                    </MTextarea>
+                                </MCol>
+                            </MRow>
+                        </MCol>
+                    </MRow>
+                    <MRow>
+                        <MCol Cols="6">
+                            <MRow>
+                                <MCol Cols="3"><MSubheader Style="padding:0px;">毕业学校:</MSubheader></MCol>
+                                <MCol Cols="9"><MTextField TValue="string" Style="margin:2px;" @bind-Value="_userInput.College" Placeholder="请输入毕业学校" Outlined Clearable Dense></MTextField></MCol>
+                            </MRow>
+                        </MCol>
+                        <MCol Cols="6">
+                            <MRow>
+                                <MCol Cols="3"><MSubheader Style="padding:0px;">文化程度:</MSubheader></MCol>
+                                <MCol Cols="9">
+                                    <MSelect @bind-Value="_userInput.CultureLevel"
+                                             Items="_cultureLevelOptions"
+                                             TItem="CultureLevelEnum"
+                                             TItemValue="CultureLevelEnum"
+                                             TValue="CultureLevelEnum"
+                                             ItemValue="r=>r"
+                                             ItemText="r=>r.GetDescription()"
+                                             Style="margin:2px;"
+                                             Clearable
+                                             Outlined
+                                             Placeholder="请选择文化程度"
+                                             Dense>
+                                            
+                                    </MSelect>
+                                </MCol>
+                            </MRow>
+                        </MCol>
+                    </MRow>
+                    <MRow>
+                        <MCol Cols="6">
+                            <MRow>
+                                <MCol Cols="3"><MSubheader Style="padding:0px;">政治面貌:</MSubheader></MCol>
+                                <MCol Cols="9"><MTextField TValue="string" Style="margin:2px;" @bind-Value="_userInput.PoliticalOutlook" Placeholder="请输入政治面貌" Outlined Clearable Dense></MTextField></MCol>
+                            </MRow>
+                        </MCol>
+                        <MCol Cols="6">
+                            <MRow>
+                                <MCol Cols="3"><MSubheader Style="padding:0px;">办公电话:</MSubheader></MCol>
+                                <MCol Cols="9"><MTextField TValue="string" Style="margin:2px;" @bind-Value="_userInput.OfficePhone" Placeholder="请输入办公电话" Outlined Clearable Dense></MTextField></MCol>
+                            </MRow>
+                        </MCol>
+                    </MRow>
+                    <MRow>
+                        <MCol Cols="6">
+                            <MRow>
+                                <MCol Cols="3"><MSubheader Style="padding:0px;">紧急联系人:</MSubheader></MCol>
+                                <MCol Cols="9"><MTextField TValue="string" Style="margin:2px;" @bind-Value="_userInput.EmergencyContact" Placeholder="请输入紧急联系人" Outlined Clearable Dense></MTextField></MCol>
+                            </MRow>
+                        </MCol>
+                        <MCol Cols="6">
+                            <MRow>
+                                <MCol Cols="3"><MSubheader Style="padding:0px;">联系人电话:</MSubheader></MCol>
+                                <MCol Cols="9"><MTextField TValue="string" Style="margin:2px;" @bind-Value="_userInput.EmergencyPhone" Placeholder="请输入联系人电话" Outlined Clearable Dense></MTextField></MCol>
+                            </MRow>
+                        </MCol>
+                    </MRow>
+                    <MRow>
+                        <MCol Cols="12">
+                            <MRow>
+                                <MCol Cols="2"><MSubheader Style="padding:0px;">联系人地址:</MSubheader></MCol>
+                                <MCol Cols="10">
+                                    <MTextarea Rows="2"
+                                                RowHeight="20" 
+                                                AutoGrow 
+                                                Style="margin:2px;"
+                                    @bind-Value="_userInput.EmergencyAddress"
+                                               Placeholder="请输入联系人地址" 
+                                                Outlined
+                                                Clearable>
+                                    </MTextarea>
+                                </MCol>
+                            </MRow>
+                        </MCol>
+                    </MRow>
+                    <MRow>
+                        <MCol Cols="12">
+                            <MRow>
+                                <MCol Cols="2"><MSubheader Style="padding:0px;">备注:</MSubheader></MCol>
+                                <MCol Cols="10">
+                                    <MTextarea Rows="2"
+                                                RowHeight="20" 
+                                                AutoGrow 
+                                                Style="margin:2px;"
+                                    @bind-Value="_userInput.Remark"
+                                                Placeholder="请输入备注信息" 
+                                                Outlined 
+                                                Clearable>
+                                    </MTextarea>
+                                </MCol>
+                            </MRow>
+                        </MCol>
+                    </MRow>
+                </MTabItem>
+            </MTabsItems>
+        </MCardText>
+
+        <MCardActions>
+            <MSpacer></MSpacer>
+
+            <MButton Color="green darken-1"
+                     Text
+                     OnClick="()=> _dialog = false">
+                取消
+            </MButton>
+
+            <MButton Color="error"
+                     Text
+                     OnClick="AddAccountSubmit">
+                确认
+            </MButton>
+        </MCardActions>
+    </MCard>
+</MDialog>
 @code {
 
 }
@@ -177,5 +667,9 @@
         display: flex !important;
         align-items: center !important;
         justify-content: center !important;
+    }
+
+     .centered-text input {
+        text-align: center;
     }
 </style>

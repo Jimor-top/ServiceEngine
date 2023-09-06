@@ -8,6 +8,10 @@ namespace ServiceEngineMasaCore.Blazor.Pages.App.SystemManagement
 {
     public partial class PersonalCenter : IDisposable
     {
+        [Inject]
+        [NotNull]
+        IPopupService? _popupService { get; set; }
+
         private PEnqueuedSnackbars? _enqueuedSnackbars;
 
         [Inject]
@@ -38,12 +42,14 @@ namespace ServiceEngineMasaCore.Blazor.Pages.App.SystemManagement
             if (firstRender)
             {
                 _GlobalConfig.NavigationStyleChanged += NavigationStyleChanged;
+                _popupService.ShowProgressLinear();
                 _UserInfoDto = _iUserInfoStore.GetUserInfos();
                 var res = await _ISysUserService.GetSysUserBaseInfoAsync();
                 _UserInfo = res.Result;
                 if (res.Result != null) { 
                     StateHasChanged();
                 }
+                _popupService.HideProgressLinear();
             }
             await base.OnAfterRenderAsync(firstRender);
         }

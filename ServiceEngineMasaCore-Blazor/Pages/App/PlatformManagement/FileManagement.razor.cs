@@ -11,6 +11,10 @@ namespace ServiceEngineMasaCore.Blazor.Pages.App.PlatformManagement
     {
         [Inject]
         [NotNull]
+        IPopupService? _popupService { get; set; }
+
+        [Inject]
+        [NotNull]
         ISysFileService? _sysFileService { get; set; }
 
         List<SysFile> _sysFileList = new List<SysFile>();
@@ -24,7 +28,7 @@ namespace ServiceEngineMasaCore.Blazor.Pages.App.PlatformManagement
         bool _isLoading = false;
         readonly List<DataTableHeader<SysFile>> _headers = new List<DataTableHeader<SysFile>>()
         {
-                new() { Text = "序号", Value = nameof(SysFile.Index) },
+            new() { Text = "序号", Value = nameof(SysFile.Index) },
             new() { Text = "名称", Value = nameof(SysFile.FileName) },
             new() { Text = "后缀", Value = nameof(SysFile.Suffix) },
             new() { Text = "大小kb", Value = nameof(SysFile.SizeKb) },
@@ -39,13 +43,13 @@ namespace ServiceEngineMasaCore.Blazor.Pages.App.PlatformManagement
             {
                 _GlobalConfig.NavigationStyleChanged += NavigationStyleChanged;
                 _isLoading = true;
-
+                _popupService.ShowProgressLinear();
                 input = new PFileInput() {
                     Page = 1,
                     PageSize = int.Parse(_paginationSelect),
                 };
                 await LoadData(input);
-
+                _popupService.HideProgressLinear();
                 StateHasChanged();
             }
             await base.OnAfterRenderAsync(firstRender);

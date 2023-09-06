@@ -14,6 +14,10 @@ namespace ServiceEngineMasaCore.Blazor.Pages.App.PlatformManagement
     {
         [Inject]
         [NotNull]
+        IPopupService? _popupService { get; set; }
+
+        [Inject]
+        [NotNull]
         ISysRegionService? _sysRegionService { get; set; }
 
 
@@ -43,7 +47,7 @@ namespace ServiceEngineMasaCore.Blazor.Pages.App.PlatformManagement
             if (firstRender)
             {
                 _GlobalConfig.NavigationStyleChanged += NavigationStyleChanged;
-
+                _popupService.ShowProgressLinear();
                 var res = await _sysRegionService.GetSysRegionListAsync(0);
                 if (res != null && res.Result != null)
                 {
@@ -62,7 +66,7 @@ namespace ServiceEngineMasaCore.Blazor.Pages.App.PlatformManagement
                     PageSize = int.Parse(_paginationSelect),
                 };
                 await LoadData(input);
-
+                _popupService.HideProgressLinear();
                 StateHasChanged();
             }
             await base.OnAfterRenderAsync(firstRender);
@@ -110,7 +114,6 @@ namespace ServiceEngineMasaCore.Blazor.Pages.App.PlatformManagement
         public async Task FetchRegion(SysRegion item)
         {
             var res = await _sysRegionService.GetSysRegionListAsync(item.Id);
-            Console.WriteLine(JsonConvert.SerializeObject(res.Result));
             if (res != null && res?.Result.Count != 0)
             {
                 foreach (var resItem in res.Result)
@@ -125,11 +128,6 @@ namespace ServiceEngineMasaCore.Blazor.Pages.App.PlatformManagement
             else {
                 item.Children = null;
             }
-        }
-
-        private void OpenAddDialog(long parentId, string parentName)
-        {
-
         }
 
         public void Dispose()

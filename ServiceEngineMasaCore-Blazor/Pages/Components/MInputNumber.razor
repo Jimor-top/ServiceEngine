@@ -1,0 +1,19 @@
+﻿@using Microsoft.AspNetCore.Components
+@using Microsoft.AspNetCore.Components.Forms
+@using Masa.Blazor
+
+<MTextField PrependIcon="mdi mdi-minus"
+            AppendOuterIcon="mdi mdi-plus" 
+            OnPrependClick="Decrement"
+            OnAppendOuterClick="Increment"
+@bind-Value="@Value"
+            TValue="int"
+            class="centered-text"
+            Outlined 
+            Dense />
+
+<style>
+    .centered-text {
+        text-align: center;
+    }
+</style>

@@ -11,6 +11,10 @@ namespace ServiceEngineMasaCore.Blazor.Pages.App.PlatformManagement
     {
         [Inject]
         [NotNull]
+        IPopupService? _popupService { get; set; }
+
+        [Inject]
+        [NotNull]
         ISysPrintService? _sysPrintService { get; set; }
 
         List<SysPrint> _sysPrintList = new List<SysPrint>();
@@ -36,6 +40,7 @@ namespace ServiceEngineMasaCore.Blazor.Pages.App.PlatformManagement
             if (firstRender)
             {
                 _GlobalConfig.NavigationStyleChanged += NavigationStyleChanged;
+                _popupService.ShowProgressLinear();
                 _isLoading = true;
                 input = new PPrintInput()
                 {
@@ -43,6 +48,7 @@ namespace ServiceEngineMasaCore.Blazor.Pages.App.PlatformManagement
                     PageSize = int.Parse(_paginationSelect),
                 };
                 await LoadData(input);
+                _popupService.HideProgressLinear();
                 StateHasChanged();
             }
             await base.OnAfterRenderAsync(firstRender);

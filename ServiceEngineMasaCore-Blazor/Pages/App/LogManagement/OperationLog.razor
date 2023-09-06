@@ -9,8 +9,8 @@
 <MCard Tile="@(_GlobalConfig.NavigationStyle != NavigationStyles.Rounded)">
     <MRow NoGutters>
         <MCol Md="12">
-            <MRow>
-                <MCol Align="@AlignTypes.Center" class="ml-4">
+            <MRow class="ml-2 mt-2">
+                <MCol Align="@AlignTypes.Center">
                     @*<PBlockText Primary="账号:"></PBlockText>*@
                     <PDateDigitalClockPicker @bind-Value="_startDate"
                                              MultiSection=true
@@ -54,7 +54,7 @@
             </MRow>
             <MRow>
                 <MCol Cols="12">
-                    <MDataTable Headers="_headers" Items="_sysLogList" TItem="SysLogOp" FixedHeader=false HideDefaultFooter Class="elevation-1" Style="width: 100%;height:calc(100vh - 280px);overflow-y:auto;" ItemsPerPage="100" Loading="_isLoading">
+                    <MDataTable Headers="_headers" Items="_sysLogList" TItem="SysLogOp" FixedHeader=false HideDefaultFooter Class="elevation-1" Style="width: 100%;height:calc(100vh - 300px);overflow-y:auto;" ItemsPerPage="100" Loading="_isLoading">
                         <HeaderColContent Context="header">
                             <span class="text-subtitle">@header.Text</span>
                         </HeaderColContent>

@@ -10,6 +10,10 @@ namespace ServiceEngineMasaCore.Blazor.Pages.App.SystemManagement
     {
         [Inject]
         [NotNull]
+        IPopupService? _popupService { get; set; }
+
+        [Inject]
+        [NotNull]
         ISysOrgService? _sysOrgService { get; set; }
 
         List<SysOrg> _sysOrgList = new List<SysOrg>();
@@ -35,11 +39,13 @@ namespace ServiceEngineMasaCore.Blazor.Pages.App.SystemManagement
             if (firstRender)
             {
                 _GlobalConfig.NavigationStyleChanged += NavigationStyleChanged;
+                _popupService.ShowProgressLinear();
                 var res = await _sysOrgService.GetSysOrgList(0, "", "", "");
                 if (res != null && res.Result != null)
                 {
                     _sysOrgList = res.Result;
                 }
+                _popupService.HideProgressLinear();
                 StateHasChanged();
             }
             await base.OnAfterRenderAsync(firstRender);

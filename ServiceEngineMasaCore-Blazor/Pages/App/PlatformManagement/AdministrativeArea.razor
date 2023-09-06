@@ -33,29 +33,6 @@
                         <LabelContent>
                             <div class="d-flex justify-space-between align-center">
                                 <span>@context.Item.Name</span>
-                                <MMenu Right Bottom class="mr-2">
-                                    <ActivatorContent Context="activatorContext">
-                                        <MButton Icon @attributes="@activatorContext.Attrs">
-                                            <MIcon Small>mdi mdi-dots-vertical</MIcon>
-                                        </MButton>
-                                    </ActivatorContent>
-                                    <ChildContent>
-                                        <MList>
-                                            <MListItem OnClick="()=>OpenAddDialog(context.Item.Id,context.Item.Name)">
-                                                <MIcon Small>mdi-plus-circle-outline</MIcon>
-                                                <MListItemTitle Class="ml-2"> @T("AddSubordinate") </MListItemTitle>
-                                            </MListItem>
-                                            <MListItem>
-                                                <MIcon Small>mdi-pencil-outline</MIcon>
-                                                <MListItemTitle Class="ml-2"> @T("Edit") </MListItemTitle>
-                                            </MListItem>
-                                            <MListItem>
-                                                <MIcon Small>mdi-trash-can-outline</MIcon>
-                                                <MListItemTitle Class="ml-2"> @T("Delete") </MListItemTitle>
-                                            </MListItem>
-                                        </MList>
-                                    </ChildContent>
-                                </MMenu>
                             </div>
                         </LabelContent>
                     </MTreeview>

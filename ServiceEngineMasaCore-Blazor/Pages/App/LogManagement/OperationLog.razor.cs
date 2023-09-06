@@ -1,15 +1,10 @@
-﻿using COSXML.Network;
-using Masa.Blazor.Presets;
-using Microsoft.JSInterop;
-using OfficeOpenXml.FormulaParsing.Excel.Functions.Text;
-using Qiniu.CDN;
+﻿using Masa.Blazor.Presets;
 using ServiceEngine.Core;
+using ServiceEngine.Core.Util;
 using ServiceEngineMasaCore.Blazor.Service.Log.Dto;
 using ServiceEngineMasaCore.Blazor.Service.Log.Interface;
 using System.Diagnostics.CodeAnalysis;
-using System.Net.Http.Headers;
-using System.Net.Mime;
-using System.Text;
+
 
 namespace ServiceEngineMasaCore.Blazor.Pages.App.LogManagement
 {
@@ -18,7 +13,12 @@ namespace ServiceEngineMasaCore.Blazor.Pages.App.LogManagement
         private PEnqueuedSnackbars? _enqueuedSnackbars;
 
         [Inject]
-        IJSRuntime jsRuntime { get; set; }
+        [NotNull]
+        IPopupService? _popupService { get; set; }
+
+        [Inject]
+        [NotNull]
+        DownloadFileUtil? _downloadFileUtil { get; set; }
 
         [Inject]
         [NotNull]
@@ -61,9 +61,10 @@ namespace ServiceEngineMasaCore.Blazor.Pages.App.LogManagement
             if (firstRender)
             {
                 _GlobalConfig.NavigationStyleChanged += NavigationStyleChanged;
-                
+                _popupService.ShowProgressLinear();
                 _isLoading = true;
                 await LoadData();
+                _popupService.HideProgressLinear();
                 StateHasChanged();
             }
             await base.OnAfterRenderAsync(firstRender);
@@ -136,37 +137,7 @@ namespace ServiceEngineMasaCore.Blazor.Pages.App.LogManagement
             };
             var res = await _sysLogServices.ExportLogOpAsync(input);
             if (res != null) {
-                // 获取 Content-Disposition 头部信息
-                ContentDispositionHeaderValue.TryParse(res.Content.Headers.ContentDisposition.ToString(), out var contentDisposition);
-                // 判断文件名的编码方式
-                // 解析 filename=
-                string fileName = string.Empty;
-                if (!string.IsNullOrEmpty(contentDisposition.FileName))
-                fileName = contentDisposition.FileName;
-                // 解析 filename*=UTF-8''
-                const string fileNameStarPrefix = "UTF-8''";
-                if (contentDisposition.Parameters.Any(p => p.Name.Equals("filename*")))
-                {
-                    var fileNameStarParam = contentDisposition.Parameters.First(p => p.Name.Equals("filename*"));
-                    if (fileNameStarParam.Value.StartsWith(fileNameStarPrefix))
-                    {
-                        var fileNameStarValue = fileNameStarParam.Value.Substring(fileNameStarPrefix.Length);
-                        var decodedFileName = Uri.UnescapeDataString(fileNameStarValue);
-                        var encodedBytes = Encoding.UTF8.GetBytes(decodedFileName);
-                        fileName = Encoding.UTF8.GetString(encodedBytes);
-                    }
-                }
-                if (fileName != null)
-                {
-                    using (var memoryStream = new MemoryStream())
-                    {
-                        await res?.Content?.CopyToAsync(memoryStream);
-                        memoryStream.Position = 0;
-
-                        // 调用 JavaScript interop 方法下载文件
-                        await jsRuntime.InvokeVoidAsync("downloadFile", fileName, Convert.ToBase64String(memoryStream.ToArray()));
-                    }
-                }
+                await _downloadFileUtil.DownloadFile(res);
             }
         }
         private void Enqueue(bool result, string? context)

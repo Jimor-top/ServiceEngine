@@ -26,18 +26,37 @@ namespace ServiceEngineMasaCore.Blazor.Service.UserInfo.Service
         public Task<AdminResult<SysUser>> GetSysUserBaseInfoAsync()
            => HandleErrorAsync(_client.GetSysUserBaseInfoAsync());
 
-        public Task<AdminResult<int>> PostSysUserBaseInfoAsync(SysUser userinfo)
-            => HandleErrorAsync(_client.PostSysUserBaseInfoAsync(userinfo));
+        public Task<AdminResult<int>> PostSysUserBaseInfoAsync(SysUser input)
+            => HandleErrorAsync(_client.PostSysUserBaseInfoAsync(input));
 
-        public Task<AdminResult<object>> ChangeSysUserPwd(UserPwdDto userPwdDto)
-          => HandleErrorAsync(_client.ChangeSysUserPwd(userPwdDto));
+        public Task<AdminResult<object>> ChangeSysUserPwd(UserPwdDto input)
+          => HandleErrorAsync(_client.ChangeSysUserPwd(input));
 
-        public Task<AdminResult<string>> UpdateSysUserBaseInfoAsync(SysUser userinfo)
-            => HandleErrorAsync(_client.UpdateSysUserBaseInfoAsync(userinfo));
+        public Task<AdminResult<string>> UpdateSysUserBaseInfoAsync(SysUser input)
+            => HandleErrorAsync(_client.UpdateSysUserBaseInfoAsync(input));
 
         public Task<AdminResult<object>> SysAuthUserlogoutAsync()
           => HandleErrorAsync(_client.SysAuthUserlogoutAsync());
 
-   
+        public Task<AdminResult<int>> SetSysUserStatusAsync(UInput input)
+         => HandleErrorAsync(_client.SetSysUserStatusAsync(input));
+
+        public Task<AdminResult<int>> ResetPwdAsync(ResetPwdInput input)
+            => HandleErrorAsync(_client.ResetPwdAsync(input));
+
+        public Task<AdminResult<object>> AddSysUserAsync(AddUserInput input)
+            => HandleErrorAsync(_client.AddSysUserAsync(input));
+
+        public Task<AdminResult<object>> UpdateSysUserAsync(UpdateUserInput input)
+            => HandleErrorAsync(_client.UpdateSysUserAsync(input));
+
+        public Task<AdminResult<object>> DeleteSysUserAsync(DeleteInput input)
+            => HandleErrorAsync(_client.DeleteSysUserAsync(input));
+
+        public Task<AdminResult<List<long>>> GetSysUserRoleListAsync(long userId)
+            => HandleErrorAsync(_client.GetSysUserRoleListAsync(userId));
+
+        public Task<AdminResult<List<SysUserExtOrg>>> GetSysUserExtRoleListAsync(long userId)
+           => HandleErrorAsync(_client.GetSysUserExtRoleListAsync(userId));
     }
 }

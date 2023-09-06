@@ -12,6 +12,10 @@ namespace ServiceEngineMasaCore.Blazor.Pages.App.PlatformManagement
     {
         [Inject]
         [NotNull]
+        IPopupService? _popupService { get; set; }
+
+        [Inject]
+        [NotNull]
         ISysPluginService? _sysPluginService { get; set; }
 
         List<SysPlugin> _sysPluginList = new List<SysPlugin>();
@@ -45,7 +49,9 @@ namespace ServiceEngineMasaCore.Blazor.Pages.App.PlatformManagement
                     Page = 1,
                     PageSize = int.Parse(_paginationSelect),
                 };
+                _popupService.ShowProgressLinear();
                 await LoadData(input);
+                _popupService.HideProgressLinear();
                 _isLoading = false;
                 StateHasChanged();
             }

@@ -29,7 +29,7 @@ namespace ServiceEngineMasaCore.Blazor.Shared
             if (firstRender)
             {
                 await GlobalConfig.InitFromStorage();
-                await jsRuntime.InvokeVoidAsync("eval", "function toggleFullScreen() { /* Your toggleFullScreen JavaScript code here */ }");
+                //await jsRuntime.InvokeVoidAsync("eval", "function toggleFullScreen() { /* Your toggleFullScreen JavaScript code here */ }");
             }
         }
         void OnLanguageChanged(CultureInfo culture)

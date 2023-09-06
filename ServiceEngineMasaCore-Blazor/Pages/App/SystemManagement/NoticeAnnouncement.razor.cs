@@ -12,6 +12,10 @@ namespace ServiceEngineMasaCore.Blazor.Pages.App.SystemManagement
     {
         [Inject]
         [NotNull]
+        IPopupService? _popupService { get; set; }
+
+        [Inject]
+        [NotNull]
         ISysNoticeService? _sysNoticeService { get; set; }
 
         List<SysNotice> _sysNoticeList = new List<SysNotice>();
@@ -45,8 +49,9 @@ namespace ServiceEngineMasaCore.Blazor.Pages.App.SystemManagement
                     Page = 1,
                     PageSize = int.Parse(_paginationSelect),
                 };
+                _popupService.ShowProgressLinear();
                 await LoadData(input);
-                
+                _popupService.HideProgressLinear();
                 StateHasChanged();
             }
             await base.OnAfterRenderAsync(firstRender);

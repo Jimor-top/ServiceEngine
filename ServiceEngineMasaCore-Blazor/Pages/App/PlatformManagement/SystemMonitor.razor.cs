@@ -9,6 +9,10 @@ namespace ServiceEngineMasaCore.Blazor.Pages.App.PlatformManagement
     {
         [Inject]
         [NotNull]
+        IPopupService? _popupService { get; set; }
+
+        [Inject]
+        [NotNull]
         ISysServerService? _sysServerService { get; set; }
         dynamic? _diskInfo;
         dynamic? _baseInfo;
@@ -24,11 +28,17 @@ namespace ServiceEngineMasaCore.Blazor.Pages.App.PlatformManagement
             if (firstRender)
             {
                 _GlobalConfig.NavigationStyleChanged += NavigationStyleChanged;
-                await LoadServerDiskAsync();
-                await LoadServerBaseAsync();
-                await LoadServerUsedAsync();
-                await LoadServerAssemblyListAsync();
-                _timer = new Timer(async (object? state) => { await LoadServerUsedAsync();}, null, Timeout.Infinite, Timeout.Infinite);
+                _popupService.ShowProgressLinear();
+                var tasks = new Task[]
+                {
+                    LoadServerDiskAsync(),
+                    LoadServerBaseAsync(),
+                    LoadServerUsedAsync(),
+                    LoadServerAssemblyListAsync()
+                };
+                await Task.WhenAll(tasks);
+                _popupService.HideProgressLinear();
+                _timer = new Timer(async (object? state) => { await LoadServerUsedAsync(); await InvokeAsync(StateHasChanged); }, null, Timeout.Infinite, Timeout.Infinite);
                 _timer.Change(5000, 10000);
                 StateHasChanged();
             }

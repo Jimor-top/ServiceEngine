@@ -1,4 +1,6 @@
-﻿using ServiceEngine.Core;
+﻿using Masa.Blazor.Presets;
+using ServiceEngine.Core;
+using ServiceEngine.Core.Util;
 using ServiceEngineMasaCore.Blazor.Global;
 using ServiceEngineMasaCore.Blazor.Service.Log.Dto;
 using ServiceEngineMasaCore.Blazor.Service.Log.Interface;
@@ -8,6 +10,16 @@ namespace ServiceEngineMasaCore.Blazor.Pages.App.LogManagement
 {
     public partial class ExceptionLog : IDisposable
     {
+        private PEnqueuedSnackbars? _enqueuedSnackbars;
+
+        [Inject]
+        [NotNull]
+        IPopupService? _popupService { get; set; }
+
+        [Inject]
+        [NotNull]
+        DownloadFileUtil? _downloadFileUtil { get; set; }
+
         [Inject]
         [NotNull]
         ISysLogService? _sysLogServices { get; set; }
@@ -20,6 +32,14 @@ namespace ServiceEngineMasaCore.Blazor.Pages.App.LogManagement
         int _tatolPage = 1;
         int _currentPage = 1;
         private string _paginationSelect = "10";
+
+        private DateTime? _startDate;
+        private DateTime? _endDate;
+
+        bool IsDateAllowed(DateOnly date)
+        {
+            return date >= (_startDate != null ? new DateOnly(_startDate.Value.Year, _startDate.Value.Month, _startDate.Value.Day) : null);
+        }
 
         bool _isLoading = false;
         readonly List<DataTableHeader<SysLogEx>> _headers = new List<DataTableHeader<SysLogEx>>()
@@ -50,14 +70,23 @@ namespace ServiceEngineMasaCore.Blazor.Pages.App.LogManagement
                     EndTime = DateTime.Now,
                 };
                 _isLoading = true;
-                await LoadData(input);
+                _popupService.ShowProgressLinear();
+                await LoadData();
+                _popupService.HideProgressLinear();
                 _isLoading = false;
                 StateHasChanged();
             }
             await base.OnAfterRenderAsync(firstRender);
         }
-        private async Task LoadData(PLogInput input)
+        private async Task LoadData()
         {
+            input = new PLogInput()
+            {
+                Page = _currentPage,
+                PageSize = int.Parse(_paginationSelect),
+                StartTime = _startDate != null ? Convert.ToDateTime(_startDate) : null,
+                EndTime = _endDate != null ? Convert.ToDateTime(_endDate) : null,
+            };
             var res = await _sysLogServices.GetSysLogExPageAsync(input);
             if (res != null && res.Result?.Items != null)
             {
@@ -78,27 +107,58 @@ namespace ServiceEngineMasaCore.Blazor.Pages.App.LogManagement
         private async Task OnPaginationValueChange(int value)
         {
             _currentPage = value;
-            input = new PLogInput()
-            {
-                Page = value,
-                PageSize = int.Parse(_paginationSelect),
-                StartTime = DateTime.Now.AddDays(-1),
-                EndTime = DateTime.Now,
-            };
-            await LoadData(input);
+            await LoadData();
         }
         private async Task OnSelectValueChange(string value)
         {
             _paginationSelect = value;
             _currentPage = 1;
+            await LoadData();
+        }
+        private void ResetOnClick()
+        {
+            _startDate = null;
+            _endDate = null;
+        }
+        private async Task ClearAllOnClick()
+        {
+            var res = await _sysLogServices.ClearSysLogExAsync();
+            if (res != null && res.Result)
+            {
+                _sysLogList.Clear();
+                Enqueue(true, "清空成功");
+            }
+            else
+            {
+                Enqueue(false, "清空失败");
+            }
+        }
+        private async Task ExportOnClick()
+        {
             input = new PLogInput()
             {
-                Page = 1,
-                PageSize = int.Parse(value),
-                StartTime = DateTime.Now.AddDays(-1),
-                EndTime = DateTime.Now,
+                StartTime = _startDate != null ? Convert.ToDateTime(_startDate) : null,
+                EndTime = _endDate != null ? Convert.ToDateTime(_endDate) : null,
             };
-            await LoadData(input);
+            var res = await _sysLogServices.ExportLogExAsync(input);
+            if (res != null)
+            {
+                await _downloadFileUtil.DownloadFile(res);
+            }
+        }
+        private void Enqueue(bool result, string? context)
+        {
+            _enqueuedSnackbars?.EnqueueSnackbar(new SnackbarOptions()
+            {
+                Content = context,
+                Type = result ? AlertTypes.Success : AlertTypes.Error,
+                Closeable = true
+            });
+        }
+        private async Task QueryOnClick()
+        {
+            _currentPage = 1;
+            await LoadData();
         }
         public void Dispose()
         {

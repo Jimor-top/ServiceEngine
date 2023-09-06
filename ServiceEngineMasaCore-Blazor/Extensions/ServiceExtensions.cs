@@ -113,6 +113,7 @@ namespace ServiceEngineMasaCore.Blazor.Extensions
 
             #endregion
             #region 注册业务服务
+            services.AddScoped<DownloadFileUtil>();
             services.AddScoped<ILocalStorageUtil, LocalStorageUtil>();
             services.AddScoped<ISessionStorageUtil, SessionStorageUtil>();
             services.AddScoped<ISysAuthService, SysAuthService>();

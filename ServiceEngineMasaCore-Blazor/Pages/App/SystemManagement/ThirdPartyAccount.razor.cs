@@ -1,4 +1,5 @@
-﻿using ServiceEngine.Core;
+﻿using Masa.Blazor;
+using ServiceEngine.Core;
 using ServiceEngineMasaCore.Blazor.Service.Log.Dto;
 using ServiceEngineMasaCore.Blazor.Service.Role.Dto;
 using ServiceEngineMasaCore.Blazor.Service.Role.Interface;
@@ -10,6 +11,10 @@ namespace ServiceEngineMasaCore.Blazor.Pages.App.SystemManagement
 {
     public partial class ThirdPartyAccount : IDisposable
     {
+        [Inject]
+        [NotNull]
+        IPopupService? _popupService { get; set; }
+
         [Inject]
         [NotNull]
         IWeChatService? _sysWeChatService { get; set; }
@@ -48,7 +53,9 @@ namespace ServiceEngineMasaCore.Blazor.Pages.App.SystemManagement
                     Page = 1,
                     PageSize = int.Parse(_paginationSelect),
                 };
+                _popupService.ShowProgressLinear();
                 await LoadData(input);
+                _popupService.HideProgressLinear();
                 StateHasChanged();
             }
             await base.OnAfterRenderAsync(firstRender);

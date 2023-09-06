@@ -34,7 +34,6 @@ namespace ServiceEngineMasaCore.Blazor.Service
                 {
                     await Popup.EnqueueSnackbarAsync(result.Message ?? "Requert error.");
                 }
-
                 return result;
             }
             catch (HttpRequestException ex) when (ex.InnerException is ApiInvalidConfigException configException)
@@ -61,7 +60,7 @@ namespace ServiceEngineMasaCore.Blazor.Service
             {
                 await Popup.EnqueueSnackbarAsync(ex.Message, AlertTypes.Error);
             }
-
+           
             return new AdminResult<T>();
         }
 
