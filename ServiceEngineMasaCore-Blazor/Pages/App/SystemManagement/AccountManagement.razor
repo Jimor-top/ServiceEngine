@@ -132,20 +132,18 @@
                                             <MSwitch Style="padding:0px;margin:0px;" @bind-Value="Status" Inset OnChange="SwitchToggledCallback" OnClick="()=>OnSwitchToggled(context.Item.Id)"></MSwitch>
                                             break;
                                         case "Action":
-                                            <MIcon Small
-                                                   Class="mr-2"
-                                                   OnClick="()=>EditUserOnClick(context.Item)">mdi-pencil</MIcon>
+                                            <MIcon OnClick="()=>EditUserOnClick(context.Item)">mdi-pencil</MIcon>
 
                                             <MMenu Right Bottom class="mr-2" OpenOnHover=true>
                                                 <ActivatorContent Context="activatorContext">
                                                     <MButton Icon @attributes="@activatorContext.Attrs">
-                                                        <MIcon Small>mdi mdi-dots-horizontal</MIcon>
+                                                        <MIcon>mdi mdi-dots-horizontal</MIcon>
                                                 </MButton>
                                                 </ActivatorContent>
                                                 <ChildContent>
                                                     <MList>
                                                         <MListItem OnClick="()=>ResetPwdOnClick(context.Item.Account,context.Item.Id)">
-                                                            <MIcon Small>mdi-pencil-outline</MIcon>
+                                                            <MIcon Small>mdi-lock-reset</MIcon>
                                                             <MListItemTitle Class="ml-2"> @T("Reset Password") </MListItemTitle>
                                                         </MListItem>
                                                         <MListItem OnClick="()=>DltUserOnClick(context.Item.Account,context.Item.Id,context.Item.OrgId)">
@@ -344,9 +342,11 @@
                                             TItem="SysOrg"
                                             TValue="long"
                                             Dense
+                                            Autofocus
+                                            ChangeOnSelect
                                             Items="_sysOrgList"
                                             Placeholder="请选择所属机构"
-                                             Style="margin:2px;"
+                                            Style="margin:2px;"
                                             ItemText="u => u.Name"
                                             ItemValue="u => u.Id"
                                             ItemChildren="u => u.Children">
@@ -436,6 +436,8 @@
                                                    TItem="SysOrg"
                                                    TValue="long"
                                                    Dense
+                                                   Autofocus
+                                                   ChangeOnSelect
                                                    Items="_sysOrgList"
                                                    Style="margin:2px;"
                                                    Placeholder="请选择所属机构"

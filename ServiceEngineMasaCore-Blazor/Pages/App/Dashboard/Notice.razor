@@ -10,32 +10,100 @@
         <MCol Md="12">
             <MRow>
                 <MCol Align="@AlignTypes.Center" class="ml-4">
-                    @*<PBlockText Primary="账号:"></PBlockText>*@
-                    <MTextField TValue="string" Label="@T("Title")"></MTextField>
+                    <MTextField TValue="string" Label="@T("Title")" @bind-Value="_title" Clearable></MTextField>
                 </MCol>
                 <MCol Align="@AlignTypes.Center">
-                    @*<PBlockText Primary="手机号码:"></PBlockText>*@
-                    <MTextField TValue="string" Label="@T("Type")"></MTextField>
+                    <MSelect @bind-Value="_type"
+                             Items="_typeList"
+                             TItem="NoticeTypeEnum"
+                             TItemValue="NoticeTypeEnum"
+                             TValue="NoticeTypeEnum?"
+                             ItemValue="r=>r"
+                             ItemText="r=>r.GetDescription()"
+                             Label="@T("Type")"
+                             Clearable
+                             Placeholder="请选择通知类型">
+                    </MSelect>
                 </MCol>
                 <MCol Align="@AlignTypes.Center">
-                    <MButton Depressed>@T("Reset")</MButton>
-                    <MButton Depressed>@T("Query")</MButton>
+                    <MButton Depressed OnClick="ResetOnClick">@T("Reset")</MButton>
+                    <MButton Depressed OnClick="QueryOnClick">@T("Query")</MButton>
                 </MCol>
             </MRow>
             <MRow>
                 <MCol Cols="12">
-                    <MDataTable Headers="_headers" Items="_sysNoticeList" TItem="SysNotice" HideDefaultFooter Class="elevation-1" Style="width: 100%;height:calc(100vh - 280px);overflow-y:auto;" ItemsPerPage="100" Loading="_isLoading">
+                    <MDataTable Headers="_headers" Context="rowContent" Items="_sysNoticeList" TItem="SysNoticeUser" HideDefaultFooter Class="elevation-1" Style="width: 100%;height:calc(100vh - 280px);overflow-y:auto;" ItemsPerPage="100" Loading="_isLoading">
                         <HeaderColContent Context="header">
                             <span class="text-subtitle">@header.Text</span>
                         </HeaderColContent>
                         <ItemColContent>
-                            @switch (context.Header.Value)
+                           @switch (rowContent.Header.Value)
                             {
-                                case nameof(SysNotice.Index):
-                                    <span>@context.Item.Index</span>
+                                case nameof(SysNoticeUser.SysNotice.Index):
+                                    <span>@rowContent.Item.SysNotice.Index</span>
+                                    break;
+                                case nameof(SysNoticeUser.SysNotice.Title):
+                                    <span>@rowContent.Item.SysNotice.Title</span>
+                                    break;
+                                case nameof(SysNoticeUser.SysNotice.Content):
+                                    string content = @RemoveHtmlTags(@rowContent.Item.SysNotice.Content);
+                                    if (content.Length > 30)
+                                    {
+                                        <MTooltip Bottom>
+                                            <ActivatorContent>
+                                            <span @attributes="@context.Attrs">@content.Substring(0, 30)...</span>
+                                            </ActivatorContent>
+                                            <ChildContent>
+                                                <span>@content</span>
+                                            </ChildContent>
+                                        </MTooltip>
+                                    }
+                                    else
+                                    {
+                                        <span>@content</span>
+                                    }
+                                    break;
+                                case nameof(SysNoticeUser.SysNotice.Type):
+                                    var typeColor = "red";
+                                    if (rowContent.Item.SysNotice.Type == NoticeTypeEnum.ANNOUNCEMENT)
+                                    {
+                                        typeColor = "orange";
+                                    }
+                                    IEnumerable<BlockTextTag> typeTag = new List<BlockTextTag>()
+                                    {
+                                        new(rowContent.Item.SysNotice.Type.GetDescription(), typeColor,"white"),
+                                    };
+                                    <PBlockText Tags="@typeTag" class="custom-pblocktext"></PBlockText>
+                                    break;
+                                case nameof(SysNoticeUser.SysNotice.CreateTime):
+                                    <span>@rowContent.Item.SysNotice.CreateTime</span>
+                                    break;
+                                case nameof(SysNoticeUser.SysNotice.PublicUserName):
+                                    <span>@rowContent.Item.SysNotice.PublicUserName</span>
+                                    break;
+                                case nameof(SysNoticeUser.SysNotice.PublicTime):
+                                    <span>@rowContent.Item.SysNotice.PublicTime</span>
+                                    break;
+                                case nameof(SysNoticeUser.ReadStatus):
+                                    string status = "已读";
+                                    string statusColor = "grey";
+                                    if (rowContent.Item.ReadStatus == NoticeUserStatusEnum.UNREAD)
+                                    {
+                                        status = "未读";
+                                        statusColor = "red";
+                                    }
+                                    IEnumerable<BlockTextTag> statusTag = new List<BlockTextTag>()
+                                    {
+                                        new(status,statusColor ,"white"),
+                                    };
+                                    <PBlockText Tags="@statusTag" class="custom-pblocktext"></PBlockText>
+                                    break;
+                                case "Action":
+                                    bool disable = @rowContent.Item.SysNotice.Status == NoticeStatusEnum.PUBLIC;
+                                    <MIcon OnClick="()=>WatchMessageOnClick(rowContent.Item)">mdi-message-processing</MIcon>
                                     break;
                                 default:
-                                    @context.Value
+                                    @rowContent.Value
                                     break;
                             }
                         </ItemColContent>
@@ -60,10 +128,45 @@
     </MRow>
 </MCard>
 
+<MDialog @bind-Value="_dialog" MaxWidth="850" Scrollable>
+    <MCard Tile="@(_GlobalConfig.NavigationStyle != NavigationStyles.Rounded)">
+        <MCardTitle>
+            <PBlockText>
+                <PrimaryContent>
+                    <MIcon>mdi-message-processing</MIcon>
+                    @_dialogTitle
+                </PrimaryContent>
+            </PBlockText>
+        </MCardTitle>
+
+        <MCardText>
+            <MRow>
+                <MCol Cols="12">
+                    <MEditor ReadOnly @bind-Value="_content">
+                        <ToolbarContent>
+                            <span style="height:0px;"></span>
+                        </ToolbarContent>
+                    </MEditor>
+                </MCol>
+            </MRow>
+        </MCardText>
+
+        <MCardActions>
+            <MSpacer></MSpacer>
+            <MButton Color="error"
+                     Text
+                     OnClick="()=> _dialog = false">
+                确认
+            </MButton>
+        </MCardActions>
+    </MCard>
+</MDialog>
+
 <style>
     .custom-pblocktext span {
         padding: 4px !important;
         height: 26px !important;
         font-size: 16px !important;
     }
+
 </style>

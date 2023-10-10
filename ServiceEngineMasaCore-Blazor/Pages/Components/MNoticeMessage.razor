@@ -1,0 +1,115 @@
+﻿@*<div style="margin-left:15px;">
+    <MTooltip Bottom OffsetY OpenOnFocus Value=true>
+        <ActivatorContent>
+            <MIcon OnClick="() => show = !show" @attributes="@context.Attrs">mdi-message-processing-outline</MIcon>
+        </ActivatorContent>
+        <ChildContent>
+            <div style="height:500px;width:300px;">
+                <MTabs @bind-Value="_tab" BackgroundColor="transparent" Grow>
+                    <MTab Class="text-capitalize">站内信</MTab>
+                    <MTab Class="text-capitalize">我的</MTab>
+                </MTabs>
+                <MTabsItems Value="@_tab">
+                    <MTabItem>
+
+                    </MTabItem>
+                    <MTabItem>
+
+                    </MTabItem>
+                </MTabsItems>
+            </div>
+        </ChildContent>
+    </MTooltip>
+</div>*@
+<PEnqueuedSnackbars Closeable=true Position="@SnackPosition.BottomRight" Style="position:absolute;" @ref="_enqueuedSnackbars"></PEnqueuedSnackbars>
+<div style="margin-left:15px;">
+    <MMenu OffsetY OpenOnHover CloseOnContentClick="false">
+        <ActivatorContent>
+            <MBadge Content="@_badgeMessage" Value="@(_badgeMessage != 0)" OverLap>
+                <ChildContent>
+                    <MIcon @attributes="@context.Attrs">
+                        mdi-message-processing-outline
+                    </MIcon>
+                </ChildContent>
+            </MBadge>
+        </ActivatorContent>
+        <ChildContent>
+            <MCard Width="300" Height="500">
+                <MTabs @bind-Value="_tab" BackgroundColor="transparent" Grow>
+                    <MTab Class="text-capitalize">站内信</MTab>
+                    <MTab Class="text-capitalize">我的</MTab>
+                </MTabs>
+                <MTabsItems Value="@_tab">
+                    <MTabItem>
+                        <MList TwoLine>
+                            <MListItemGroup>
+                                @foreach (var item in _sysNoticeList)
+                                {
+                                    <MListItem>
+                                        <ItemContent>
+                                            <MListItemContent @onclick="()=>WatchMessageOnClick(item)">
+                                                <MListItemTitle>【@(GetTypeDescription(item.Type))】</MListItemTitle>
+                                                <MListItemSubtitle Class="text--primary">@item.Title</MListItemSubtitle>
+                                                    <MListItemSubtitle>@RemoveHtmlTags(item.Content)</MListItemSubtitle>
+                                            </MListItemContent>
+                                        </ItemContent>
+                                    </MListItem>
+                                    <MDivider />
+                                }
+                            </MListItemGroup>
+                        </MList>
+                    </MTabItem>
+                    <MTabItem>
+
+                    </MTabItem>
+                </MTabsItems>
+            </MCard>
+        </ChildContent>
+    </MMenu>
+</div>
+
+<MDialog @bind-Value="_dialog" MaxWidth="850" Scrollable>
+    <MCard>
+        <MCardTitle>
+            <PBlockText>
+                <PrimaryContent>
+                    <MIcon>mdi-message-processing</MIcon>
+                    @_dialogTitle
+                </PrimaryContent>
+            </PBlockText>
+        </MCardTitle>
+
+        <MCardText>
+            <MRow>
+                <MCol Cols="12">
+                    <MEditor ReadOnly @bind-Value="_content">
+                        <ToolbarContent>
+                            <span style="height:0px;"></span>
+                        </ToolbarContent>
+                    </MEditor>
+                </MCol>
+            </MRow>
+        </MCardText>
+
+        <MCardActions>
+            <MSpacer></MSpacer>
+            <MButton Color="error"
+                     Text
+                     OnClick="()=> _dialog = false">
+                确认
+            </MButton>
+        </MCardActions>
+    </MCard>
+</MDialog>
+<style>
+    .menu-content {
+        position: absolute;
+        background-color: #fff;
+        z-index: 100;
+        border-radius: 4px;
+        box-shadow: 0 3px 6px rgba(0,0,0,.16), 0 0 0 1px rgba(0,0,0,.08);
+        display: flex;
+        justify-content: center; /* 水平居中 */
+        align-items: center; /* 垂直居中 */
+    }
+</style>

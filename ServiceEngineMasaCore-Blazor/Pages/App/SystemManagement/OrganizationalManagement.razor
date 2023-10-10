@@ -4,58 +4,15 @@
 @attribute [Authorize]
 @inherits ProComponentBase
 @inject GlobalConfig _GlobalConfig
+@inject IJSRuntime JSRuntime
 
-
+<PEnqueuedSnackbars Closeable=true Position="@SnackPosition.TopCenter" @ref="_enqueuedSnackbars"></PEnqueuedSnackbars>
 <MRow NoGutters>
     <MCol Md="12">
         <MCard Tile="@(_GlobalConfig.NavigationStyle != NavigationStyles.Rounded)">
             <MRow Justify="JustifyTypes.SpaceBetween">
                 <MCol Cols="2">
-                    <MTreeview Active="_active"
-                               Items="_sysOrgList"
-                               OnActiveUpdate="(List<SysOrg> e)=>ActiveUpdated(e)"
-                               Activatable
-                               OpenOnClick
-                               ItemText="r=>r.Name"
-                               ItemKey="r=>r.Id"
-                               ItemChildren="r=>r.Children">
-                        <PrependContent>
-                            @if (context.Item.Children == null)
-                            {
-                                <MIcon>
-                                    mdi-account
-                                </MIcon>
-                            }
-                        </PrependContent>
-                        <LabelContent>
-                            <div class="d-flex justify-space-between align-center">
-                                <span>@context.Item.Name</span>
-                                <MMenu Right Bottom class="mr-2">
-                                    <ActivatorContent Context="activatorContext">
-                                        <MButton Icon @attributes="@activatorContext.Attrs">
-                                            <MIcon Small>mdi mdi-dots-vertical</MIcon>
-                                        </MButton>
-                                    </ActivatorContent>
-                                    <ChildContent>
-                                        <MList>
-                                            <MListItem OnClick="()=>OpenAddDialog(context.Item.Id,context.Item.Name)">
-                                                <MIcon Small>mdi-plus-circle-outline</MIcon>
-                                                <MListItemTitle Class="ml-2"> @T("AddSubordinate") </MListItemTitle>
-                                            </MListItem>
-                                            <MListItem>
-                                                <MIcon Small>mdi-pencil-outline</MIcon>
-                                                <MListItemTitle Class="ml-2"> @T("Edit") </MListItemTitle>
-                                            </MListItem>
-                                            <MListItem>
-                                                <MIcon Small>mdi-trash-can-outline</MIcon>
-                                                <MListItemTitle Class="ml-2"> @T("Delete") </MListItemTitle>
-                                            </MListItem>
-                                        </MList>
-                                    </ChildContent>
-                                </MMenu>
-                            </div>
-                        </LabelContent>
-                    </MTreeview>
+                    <OrgTree OpenSwitchOrgEvent="OpenSwitchOrg"></OrgTree>
                 </MCol>
                 <MDivider Vertical></MDivider>
                 <MCol Cols="10">
@@ -63,55 +20,93 @@
                         <MRow>
                             <MCol Align="@AlignTypes.Center" class="ml-4">
                                 @*<PBlockText Primary="账号:"></PBlockText>*@
-                                <MTextField TValue="string" Label="@T("Account")"></MTextField>
+                                <MTextField TValue="string" Label="@T("Org Name")" @bind-Value="_name" Placeholder="请输入机构名称" Clearable></MTextField>
                             </MCol>
                             <MCol Align="@AlignTypes.Center">
                                 @*<PBlockText Primary="手机号码:"></PBlockText>*@
-                                <MTextField TValue="string" Label="@T("Phone")"></MTextField>
+                                <MTextField TValue="string" Label="@T("Org Code")" @bind-Value="_code" Placeholder="请输入机构编码" Clearable></MTextField>
                             </MCol>
                             <MCol Align="@AlignTypes.Center">
-                                <MButton Depressed>@T("Reset")</MButton>
-                                <MButton Depressed>@T("Add")</MButton>
-                                <MButton Depressed>@T("Query")</MButton>
+                                @*<PBlockText Primary="手机号码:"></PBlockText>*@
+                                <MSelect @bind-Value="_type"
+                                        Items="_sysDictDatas"
+                                        TItem="SysDictData"
+                                        TItemValue="string"
+                                        TValue="string"
+                                        ItemValue="r=>r.Code"
+                                        ItemText="r=>r.Value"
+                                        Clearable
+                                        Placeholder="请选择机构类型">
+                                </MSelect>
+                            </MCol>
+                            <MCol Align="@AlignTypes.Center">
+                                <MButton Depressed OnClick="ResetOnClick">@T("Reset")</MButton>
+                                <MButton Depressed OnClick="AddOrgOnClick">@T("Add")</MButton>
+                                <MButton Depressed OnClick="QueryOnClick">@T("Query")</MButton>
                             </MCol>
                         </MRow>
                     </MRow>
                     <MRow>
                         <MCol Cols="12">
-                            <MDataTable Headers="_headers"
-                                Items="_sysOrgList" 
-                                TItem="SysOrg" 
-                                ItemKey="r=>r.Name" 
-                                HideDefaultFooter
-                                Class="elevation-1" 
-                                Style="width: 100%;" 
-                                SingleExpand="_singleExpand"
-                                ShowExpand
-                                >
-                                <HeaderColContent Context="header">
-                                    <span class="text-subtitle">@header.Text</span>
-                                </HeaderColContent>
-                                <ItemColContent>
-                                    @switch (context.Header.Value)
-                                    {
-                                        case "Action":
-                                            <MIcon Small
-                                                   Class="mr-2">mdi-pencil</MIcon>
-                                            <MIcon Small>mdi-delete</MIcon>
-                                            break;
-                                        default:
-                                            @context.Value
-                                            break;
-                                    }
-                                </ItemColContent>
-                                <ExpandedItemContent>
-                                    <td colspan="@_headers.Count" style="margin:0;padding:0;">
-                                        <MSysOrgDataTable Hheaders="_headers"
-                                                            HItems="@context.Item.Children">
-                                        </MSysOrgDataTable>
-                                    </td>
-                                </ExpandedItemContent>
-                            </MDataTable>
+                            @if (_sysOrgList != null && _sysOrgList.Any())
+                            {
+                                // 判断第一级节点的 Children 是否为空
+                                bool showExpand = !_sysOrgList.All(org => org.Children == null || org.Children.Count == 0);
+                                <MDataTable Headers="_headers"
+                                    Items="_sysOrgList" 
+                                    TItem="SysOrg" 
+                                    ItemKey="r=>r.Name" 
+                                    HideDefaultFooter
+                                    Class="elevation-1" 
+                                    Style="width: 100%;"
+                                    SingleExpand="_singleExpand"
+                                    ItemsPerPage="100"
+                                    ShowExpand=showExpand
+                                    >
+                                    <HeaderColContent Context="header">
+                                        <span class="text-subtitle">@header.Text</span>
+                                    </HeaderColContent>
+                                    <ItemColContent>
+                                        @switch (context.Header.Value)
+                                        {
+                                            case nameof(SysOrg.Status):
+                                                var status = "停用";
+                                                var color = "red";
+                                                if (context.Item.Status == StatusEnum.Enable)
+                                                {
+                                                    status = "启用";
+                                                    color = "green";
+                                                }
+                                                IEnumerable<BlockTextTag> tags = new List<BlockTextTag>()
+                                                {
+                                                new(status, color,"white"),
+                                                };
+                                                <PBlockText Tags="@tags" class="custom-pblocktext"></PBlockText>
+                                                break;
+                                            case nameof(SysOrg.OrgType):
+                                                <span>@(_sysDictDatas.Find(i => i.Code == context.Value?.ToString())?.Value)</span>
+                                                break;
+                                            case "Action":
+                                                <MIcon OnClick="()=>EditOrgOnClick(context.Item)">mdi-pencil</MIcon>
+                                                <MIcon OnClick="()=>DltOrgOnClick(context.Item)">mdi-delete</MIcon>
+                                                break;
+                                            default:
+                                                @context.Value
+                                                break;
+                                        }
+                                    </ItemColContent>
+                                    <ExpandedItemContent>
+                                         @if (context.Item.Children?.Count > 0)
+                                         {
+                                            <td colspan="@_headers.Count" style="margin:0;padding:0;">
+                                                <MSysOrgDataTable Hheaders="_headers"
+                                                                  HItems="@context.Item.Children" DictDatas="_sysDictDatas" EditOClick="EditOrgOnClick" DltOnClick="DltOrgOnClick">
+                                                </MSysOrgDataTable>
+                                            </td>
+                                        }
+                                    </ExpandedItemContent>
+                                </MDataTable>
+                            }
                         </MCol>
                     </MRow>
                 </MCol>
@@ -119,9 +114,139 @@
         </MCard>
     </MCol>
 </MRow>
-@code {
 
-}
+
+<MDialog @bind-Value="_dialog" MaxWidth="850" Scrollable>
+    <MCard Tile="@(_GlobalConfig.NavigationStyle != NavigationStyles.Rounded)">
+        <MCardTitle>
+            <PBlockText>
+                <PrimaryContent>
+                    <MIcon>mdi mdi-square-edit-outline</MIcon>
+                    @_dialogTitle
+                </PrimaryContent>
+            </PBlockText>
+        </MCardTitle>
+
+        <MCardText>
+            <MRow Class="mt-2">
+                <MCol Cols="12">
+                    <MRow>
+                        <MCol Cols="2"><MSubheader Style="padding:0px;"><span style="color:red;">*</span>上级机构:</MSubheader></MCol>
+                        <MCol Cols="10">
+                            <MCascader @bind-Value="_updateOrgInput.Pid"
+                                       TItem="SysOrg"
+                                       TValue="long"
+                                       Dense
+                                       Autofocus
+                                       ChangeOnSelect
+                                       Items="_sysOrgListCascader"
+                                       Placeholder="请选择所属机构"
+                                       Style="margin:2px;"
+                                       ItemText="u => u.Name"
+                                       ItemValue="u => u.Id"
+                                       ItemChildren="u => u.Children"
+                                       >
+                            </MCascader>
+                        </MCol>
+                    </MRow>
+                </MCol>
+            </MRow>
+            <MRow>
+                <MCol Cols="12">
+                    <MRow>
+                        <MCol Cols="2"><MSubheader Style="padding:0px;"><span style="color:red;">*</span>机构名称:</MSubheader></MCol>
+                        <MCol Cols="10"><MTextField TValue="string" Style="margin:2px;" @bind-Value="@_updateOrgInput.Name" Placeholder="请输入机构名称" HideDetails="@("auto")" Outlined Clearable Dense></MTextField></MCol>
+                    </MRow>
+                </MCol>
+            </MRow>
+            <MRow>
+                <MCol Cols="12">
+                    <MRow>
+                        <MCol Cols="2"><MSubheader Style="padding:0px;"><span style="color:red;">*</span>机构编码:</MSubheader></MCol>
+                        <MCol Cols="10"><MTextField TValue="string" Style="margin:2px;" @bind-Value="@_updateOrgInput.Code" Placeholder="请输入机构编码" HideDetails="@("auto")" Outlined Clearable Dense></MTextField></MCol>
+                    </MRow>
+                </MCol>
+            </MRow>
+            <MRow>
+                <MCol Cols="12">
+                    <MRow>
+                        <MCol Cols="2"><MSubheader Style="padding:0px;"><span style="color:red;">*</span>机构名称:</MSubheader></MCol>
+                        <MCol Cols="10">
+                            <MSelect @bind-Value="_updateOrgInput.OrgType"
+                                     Items="_sysDictDatas"
+                                     TItem="SysDictData"
+                                     TItemValue="string"
+                                     TValue="string"
+                                     ItemValue="r=>r.Code"
+                                     ItemText="r=>r.Value"
+                                     Clearable
+                                     Outlined
+                                     Placeholder="请选择机构类型"
+                                     Dense>
+                            </MSelect>
+                        </MCol>
+                    </MRow>
+                </MCol>
+            </MRow>
+            <MRow>
+                <MCol Cols="6">
+                    <MRow>
+                        <MCol Cols="3"><MSubheader Style="padding:0px;">级别:</MSubheader></MCol>
+                        <MCol Cols="9">
+                            <MTextField @bind-Value="@_updateOrgInput.OrderNo"
+                                        PrependIcon="mdi mdi-minus"
+                                        AppendOuterIcon="mdi mdi-plus"
+                                        OnPrependClick="()=>_updateOrgInput.OrderNo--"
+                                        OnAppendOuterClick="()=>_updateOrgInput.OrderNo++"
+                                        TValue="int"
+                                        Style="text-align: center"
+                                        class="centered-text"
+                                        Placeholder="排序"
+                                        Outlined
+                                        Dense />
+                        </MCol>
+                    </MRow>
+                </MCol>
+                <MCol Cols="6">
+                    <MRow>
+                        <MCol Cols="3"><MSubheader Style="padding:0px;">状态:</MSubheader></MCol>
+                        <MCol Cols="9">
+                            <MRadioGroup @bind-Value="_updateOrgInput.Status" Style="margin:8px;" Row Dense>
+                                <MRadio Label="@T("Enable")" Value="@(StatusEnum.Enable)"></MRadio>
+                                <MRadio Label="@T("Disable")" Value="@(StatusEnum.Disable)"></MRadio>
+                            </MRadioGroup>
+                        </MCol>
+                    </MRow>
+                </MCol>
+            </MRow>
+            <MRow>
+                <MCol Cols="12">
+                    <MRow>
+                        <MCol Cols="2"><MSubheader Style="padding:0px;">备注:</MSubheader></MCol>
+                        <MCol Cols="10"><MTextField TValue="string" Style="margin:2px;" @bind-Value="@_updateOrgInput.Remark" Placeholder="请输入备注" HideDetails="@("auto")" Outlined Clearable Dense></MTextField></MCol>
+                    </MRow>
+                </MCol>
+            </MRow>
+        </MCardText>
+
+        <MCardActions>
+            <MSpacer></MSpacer>
+
+            <MButton Color="green darken-1"
+                     Text
+                     OnClick="()=> _dialog = false">
+                取消
+            </MButton>
+
+            <MButton Color="error"
+                     Text
+                     OnClick="SubmitOnClick">
+                确认
+            </MButton>
+        </MCardActions>
+    </MCard>
+</MDialog>
+
 <style>
     .centered-content {
         display: flex;
@@ -133,5 +258,9 @@
         display: flex !important;
         align-items: center !important;
         justify-content: center !important;
+    }
+
+    .centered-text input {
+        text-align: center;
     }
 </style>

@@ -107,6 +107,9 @@
   "ClearAll": "清空",
   "Export": "导出",
   "Upload": "上传",
+  "Refresh": "刷新",
+
+  "Root Node": "根节点",
 
   "Male": "男",
   "Female": "女",
@@ -119,6 +122,10 @@
 
   "Role Name": "角色名称",
   "Role Code": "角色编码",
+
+  "Org Name": "机构名称",
+  "Org Code": "机构编码",
+  "Org Type": "机构类型",
 
   "Tenant Name": "租户名称",
 
@@ -138,6 +145,10 @@
   "Function Name": "功能名称",
 
   "Data Range": "数据范围",
+  "Grant Menu": "授权菜单",
+
+  "ID Isolation": "ID隔离",
+  "DB Isolation": "DB隔离",
 
   "Title": "标题",
   "Type": "类型"

@@ -13,16 +13,16 @@
             <MRow>
                 <MCol Align="@AlignTypes.Center" class="ml-4">
                     @*<PBlockText Primary="账号:"></PBlockText>*@
-                    <MTextField TValue="string" Label="@T("Tenant Name")"></MTextField>
+                    <MTextField TValue="string" Label="@T("Tenant Name")" @bind-Value="_name" Clearable></MTextField>
                 </MCol>
                 <MCol Align="@AlignTypes.Center">
                     @*<PBlockText Primary="手机号码:"></PBlockText>*@
-                    <MTextField TValue="string" Label="@T("Phone")"></MTextField>
+                    <MTextField TValue="string" Label="@T("Phone")" @bind-Value="_phone" Clearable></MTextField>
                 </MCol>
                 <MCol Align="@AlignTypes.Center">
-                    <MButton Depressed>@T("Reset")</MButton>
-                    <MButton Depressed>@T("Add")</MButton>
-                    <MButton Depressed>@T("Query")</MButton>
+                    <MButton Depressed OnClick="ResetOnClick">@T("Reset")</MButton>
+                    <MButton Depressed OnClick="AddPosOnClick">@T("Add")</MButton>
+                    <MButton Depressed OnClick="QueryOnClick">@T("Query")</MButton>
                 </MCol>
             </MRow>
             <MRow>
@@ -61,6 +61,34 @@
                                     };
                                     <PBlockText Tags="@dbTypeTag" class="custom-pblocktext"></PBlockText>
                                     break;
+                                case "Action":
+                                    <MIcon OnClick="()=>EditTenantOnClick(context.Item)">mdi-database-sync</MIcon>
+                                    <MIcon OnClick="()=>EditTenantOnClick(context.Item)">mdi-pencil</MIcon>
+
+                                    <MMenu Right Bottom OpenOnHover=true>
+                                        <ActivatorContent Context="activatorContext">
+                                            <MButton Icon @attributes="@activatorContext.Attrs">
+                                                <MIcon>mdi mdi-dots-horizontal</MIcon>
+                                            </MButton>
+                                        </ActivatorContent>
+                                        <ChildContent>
+                                            <MList>
+                                                <MListItem OnClick="()=>GrantMenuOnClick(context.Item)">
+                                                    <MIcon Small>mdi-account-details</MIcon>
+                                                    <MListItemTitle Class="ml-2"> @T("Grant Menu") </MListItemTitle>
+                                                </MListItem>
+                                                <MListItem OnClick="()=>ResetPwdOnClick(context.Item)">
+                                                    <MIcon Small>mdi-lock-reset</MIcon>
+                                                    <MListItemTitle Class="ml-2"> @T("Reset Password") </MListItemTitle>
+                                                </MListItem>
+                                                <MListItem OnClick="()=>DltTenantOnClick(context.Item)">
+                                                <MIcon Small>mdi-trash-can-outline</MIcon>
+                                                    <MListItemTitle Class="ml-2"> @T("Delete") </MListItemTitle>
+                                                </MListItem>
+                                            </MList>
+                                        </ChildContent>
+                                    </MMenu>
+                                    break;
                                 default:
                                     @context.Value
                                     break;
@@ -86,6 +114,119 @@
         </MCol>
     </MRow>
 </MCard>
+
+
+<MDialog @bind-Value="_dialog" MaxWidth="850" Scrollable>
+    <MCard Tile="@(_GlobalConfig.NavigationStyle != NavigationStyles.Rounded)">
+        <MCardTitle>
+            <PBlockText>
+                <PrimaryContent>
+                    <MIcon>mdi mdi-square-edit-outline</MIcon>
+                    @_dialogTitle
+                </PrimaryContent>
+            </PBlockText>
+        </MCardTitle>
+
+        <MCardText>
+            <MRow Class="mt-2">
+                <MCol Cols="6">
+                    <MRow>
+                        <MCol Cols="3"><MSubheader Style="padding:0px;"><span style="color:red;">*</span>租户类型:</MSubheader></MCol>
+                        <MCol Cols="9">
+                            <MRadioGroup @bind-Value="updateTenantInput.TenantType" Style="margin:8px;" Row Dense>
+                                <MRadio Label="@T("ID Isolation")" Value="@(TenantTypeEnum.Id)"></MRadio>
+                                <MRadio Label="@T("DB Isolation")" Value="@(TenantTypeEnum.Db)"></MRadio>
+                            </MRadioGroup>
+                        </MCol>
+                    </MRow>
+                </MCol>
+                <MCol Cols="6">
+                    <MRow>
+                        <MCol Cols="3"><MSubheader Style="padding:0px;"><span style="color:red;">*</span>租户名称:</MSubheader></MCol>
+                        <MCol Cols="9"><MTextField TValue="string" Style="margin:2px;" @bind-Value="updateTenantInput.Name" Placeholder="请输入租户名称" Outlined Clearable Dense></MTextField></MCol>
+                    </MRow>
+                </MCol>
+            </MRow>
+            <MRow Class="mt-2">
+                <MCol Cols="6">
+                    <MRow>
+                        <MCol Cols="3"><MSubheader Style="padding:0px;"><span style="color:red;">*</span>租管账号:</MSubheader></MCol>
+                        <MCol Cols="9"><MTextField TValue="string" Style="margin:2px;" @bind-Value="updateTenantInput.AdminAccount" Placeholder="请输入租管账号" Outlined Clearable Dense></MTextField></MCol>
+                    </MRow>
+                </MCol>
+                <MCol Cols="6">
+                    <MRow>
+                        <MCol Cols="3"><MSubheader Style="padding:0px;">电话:</MSubheader></MCol>
+                        <MCol Cols="9"><MTextField TValue="string" Style="margin:2px;" @bind-Value="updateTenantInput.Phone" Placeholder="请输入电话" Outlined Clearable Dense></MTextField></MCol>
+                    </MRow>
+                </MCol>
+            </MRow>
+            <MRow Class="mt-2">
+                <MCol Cols="6">
+                    <MRow>
+                        <MCol Cols="3"><MSubheader Style="padding:0px;">邮箱:</MSubheader></MCol>
+                        <MCol Cols="9"><MTextField TValue="string" Style="margin:2px;" @bind-Value="updateTenantInput.Email" Placeholder="请输入邮箱" Outlined Clearable Dense></MTextField></MCol>
+                    </MRow>
+                </MCol>
+                <MCol Cols="6">
+                    <MRow>
+                        <MCol Cols="3"><MSubheader Style="padding:0px;">排序:</MSubheader></MCol>
+                        <MCol Cols="9">
+                            <MTextField @bind-Value="@updateTenantInput.OrderNo"
+                                        PrependIcon="mdi mdi-minus"
+                                        AppendOuterIcon="mdi mdi-plus"
+                                        OnPrependClick="()=>updateTenantInput.OrderNo--"
+                                        OnAppendOuterClick="()=>updateTenantInput.OrderNo++"
+                                        TValue="int"
+                                        Style="text-align: center"
+                                        class="centered-text"
+                                        Placeholder="排序"
+                                        Outlined
+                                        Dense />
+                        </MCol>
+                    </MRow>
+                </MCol>
+            </MRow>
+            <MRow Class="mt-2">
+                <MCol Cols="6">
+                    <MRow>
+                        <MCol Cols="3"><MSubheader Style="padding:0px;"><span style="color:red;">*</span>数据库类型:</MSubheader></MCol>
+                        <MCol Cols="9">
+                            @*<MSelect @bind-Value="updateTenantInput.DbType"
+                                     Items="SqlSugar.DbType"
+                                     TItem="SqlSugar.DbType"
+                                     TItemValue="SqlSugar.DbType"
+                                     TValue="SqlSugar.DbType"
+                                     ItemValue="r=>r.Code"
+                                     ItemText="r=>r.Value"
+                                     Clearable
+                                     Outlined
+                                     Placeholder="请选择数据库类型"
+                                     Dense>
+                            </MSelect>*@
+                        </MCol>
+                    </MRow>
+                </MCol>
+            </MRow>
+        </MCardText>
+
+        <MCardActions>
+            <MSpacer></MSpacer>
+
+            <MButton Color="green darken-1"
+                     Text
+                     OnClick="()=> _dialog = false">
+                取消
+            </MButton>
+
+            <MButton Color="error"
+                     Text
+                     >
+                确认
+            </MButton>
+        </MCardActions>
+    </MCard>
+</MDialog>
 
 <style>
     .custom-pblocktext span {

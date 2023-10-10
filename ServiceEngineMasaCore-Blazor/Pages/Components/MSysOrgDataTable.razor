@@ -1,7 +1,10 @@
 ﻿@using ServiceEngine.Core;
 
 @*HideDefaultHeader*@
-
+@if (HItems != null && HItems.Any())
+{
+    // 判断第一级节点的 Children 是否为空
+    MyExpand = !HItems.All(org => org.Children == null || org.Children.Count == 0);
 <MDataTable Headers="Hheaders"
     Items="HItems"
     TItem="SysOrg"
@@ -9,16 +12,31 @@
     HideDefaultFooter
     Class="elevation-1"
     Style="width: 100%;background-color:antiquewhite;"
-    SingleExpand="_singleExpand"
-    ShowExpand
-    >
+    SingleExpand="true"
+    ShowExpand=MyExpand>
     <ItemColContent>
         @switch (context.Header.Value)
         {
+            case nameof(SysOrg.Status):
+                var status = "停用";
+                var color = "red";
+                if (context.Item.Status == StatusEnum.Enable)
+                {
+                    status = "启用";
+                    color = "green";
+                }
+                IEnumerable<BlockTextTag> tags = new List<BlockTextTag>()
+                {
+                new(status, color,"white"),
+                };
+                <PBlockText Tags="@tags" class="custom-pblocktext"></PBlockText>
+                break;
+            case nameof(SysOrg.OrgType):
+                <span>@(DictDatas.Find(i => i.Code == context.Value?.ToString())?.Value)</span>
+                break;
             case "Action":
-                <MIcon Small
-                        Class="mr-2">mdi-pencil</MIcon>
-                <MIcon Small>mdi-delete</MIcon>
+                <MIcon OnClick="()=>HandleEditOrgOnClick(context.Item)">mdi-pencil</MIcon>
+                <MIcon OnClick="()=>HandleDltOrgOnClick(context.Item)">mdi-delete</MIcon>
                 break;
             default:
                 @context.Value
@@ -26,12 +44,33 @@
         }
     </ItemColContent>
     <ExpandedItemContent>
-        <td colspan="@Hheaders.Count" style="margin:0;padding:0;">
-            <MSysOrgDataTable Hheaders="Hheaders"
-                                HItems="@context.Item.Children">
-            </MSysOrgDataTable>
-        </td>
+        @if (context.Item.Children?.Count > 0)
+        {
+            <td colspan="@Hheaders.Count" style="margin:0;padding:0;">
+                <MSysOrgDataTable Hheaders="Hheaders"
+                                      HItems="@context.Item.Children" MyExpand=MyExpand DictDatas="DictDatas" EditOClick="HandleEditOrgOnClick" DltOnClick="HandleDltOrgOnClick">
+                </MSysOrgDataTable>
+            </td>
+        }
     </ExpandedItemContent>
 </MDataTable>
   
+}
 
+<style>
+    .centered-content {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .custom-switch {
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+    }
+
+    .centered-text input {
+        text-align: center;
+    }
+</style>

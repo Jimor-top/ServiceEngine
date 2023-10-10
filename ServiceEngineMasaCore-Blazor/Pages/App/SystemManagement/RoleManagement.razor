@@ -59,35 +59,32 @@
                                     <PBlockText Tags="@tags" class="custom-pblocktext"></PBlockText>
                                     break;
                                 case "Action":
-                                    <MIcon Small
-                                           Class="mr-2"
-                                           OnClick="()=>EditRoleOnClick(context.Item)">mdi-pencil</MIcon>
+                                    <MIcon OnClick="()=>EditRoleOnClick(context.Item)">mdi-pencil</MIcon>
 
-                                    <MMenu Right Bottom class="mr-2" OpenOnHover=true>
+                                    <MMenu Right Bottom OpenOnHover=true>
                                         <ActivatorContent Context="activatorContext">
                                             <MButton Icon @attributes="@activatorContext.Attrs">
-                                                <MIcon Small>mdi mdi-dots-horizontal</MIcon>
+                                                <MIcon>mdi mdi-dots-horizontal</MIcon>
                                         </MButton>
-                                    </ActivatorContent>
-                                    <ChildContent>
-                                        <MList>
-                                            <MListItem OnClick="()=>DataRangeSetOnClick(context.Item)">
-                                                <MIcon Small>mdi-pencil-outline</MIcon>
-                                                <MListItemTitle Class="ml-2"> @T("Data Range") </MListItemTitle>
-                                            </MListItem>
-                                            <MListItem OnClick="()=>DltRoleOnClick(context.Item)">
-                                                <MIcon Small>mdi-trash-can-outline</MIcon>
-                                                <MListItemTitle Class="ml-2"> @T("Delete") </MListItemTitle>
-                                            </MListItem>
-                                        </MList>
-                                    </ChildContent>
-                                </MMenu>
-
+                                        </ActivatorContent>
+                                        <ChildContent>
+                                            <MList>
+                                                <MListItem OnClick="()=>DataRangeSetOnClick(context.Item)">
+                                                    <MIcon>mdi-pencil-outline</MIcon>
+                                                    <MListItemTitle Class="ml-2"> @T("Data Range") </MListItemTitle>
+                                                </MListItem>
+                                                <MListItem OnClick="()=>DltRoleOnClick(context.Item)">
+                                                    <MIcon>mdi-trash-can-outline</MIcon>
+                                                    <MListItemTitle Class="ml-2"> @T("Delete") </MListItemTitle>
+                                                </MListItem>
+                                            </MList>
+                                        </ChildContent>
+                                    </MMenu>
                                     break;
                                 default:
                                     @context.Value
                                     break;
-                                    }
+                             }
                         </ItemColContent>
                     </MDataTable>
                     <div class="d-flex align-end flex-column">
@@ -191,7 +188,7 @@
                         <MCol Cols="12">
                             <MRow>
                                 <MCol Cols="2"><MSubheader Style="padding:0px;"><span style="color:red;">*</span>角色编码:</MSubheader></MCol>
-                                <MCol Cols="10"><MTextField TValue="string" Style="margin:2px;" @bind-Value="@_updateRoleInput.Code" Placeholder="请输入角色编码" HideDetails="@("auto")" Outlined Clearable Dense></MTextField></MCol>
+                                <MCol Cols="10"><MTextField TValue="string" Style="margin:2px;" Disabled="@(!_dialogTitle.Equals("添加角色"))" @bind-Value="@_updateRoleInput.Code" Placeholder="请输入角色编码" HideDetails="@("auto")" Outlined Clearable Dense></MTextField></MCol>
                             </MRow>
                         </MCol>
                     </MRow>

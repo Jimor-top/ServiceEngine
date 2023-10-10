@@ -1,0 +1,47 @@
+﻿@using ServiceEngine.Core;
+@inherits ProComponentBase
+
+<MRow>
+    <MCol Cols="12">
+        <MTreeview Items="SysOrgList"
+                   TItem="SysOrg"
+                   TKey="long"
+                   Activatable
+                   OpenOnClick
+                   ItemText="r=>r.Name"
+                   ItemKey="r=>r.Id"
+                   ItemChildren="r=>r.Children">
+            <PrependContent>
+                @if (context.Item.Children == null)
+                {
+                    <MIcon>
+                        mdi-account
+                    </MIcon>
+                }
+            </PrependContent>
+            <LabelContent>
+                <div class="d-flex justify-space-between align-center" style="cursor:pointer" @onclick="()=>OpenSwitchOrgEvent.Invoke(context.Item)">
+                    <span>@context.Item.Name</span>
+                    <MMenu Right Bottom class="mr-2">
+                        <ActivatorContent Context="activatorContext">
+                            <MButton Icon @attributes="@activatorContext.Attrs">
+                                <MIcon Small>mdi mdi-dots-vertical</MIcon>
+                            </MButton>
+                        </ActivatorContent>
+                        <ChildContent>
+                            <MList>
+                                <MListItem>
+                                    <MListItemTitle Class="ml-2" @onclick="()=>RootClick(context.Item)"> @T("Root Node")</MListItemTitle>
+                                </MListItem>
+                                <MListItem>
+                                    <MListItemTitle Class="ml-2" @onclick="NodeRefresh"> @T("Refresh")</MListItemTitle>
+                                </MListItem>
+                            </MList>
+                        </ChildContent>
+                    </MMenu>
+                </div>
+            </LabelContent>
+        </MTreeview>
+    </MCol>
+</MRow>
+

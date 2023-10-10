@@ -5,27 +5,28 @@
 @inherits ProComponentBase
 @inject GlobalConfig _GlobalConfig
 
+<PEnqueuedSnackbars Closeable=true Position="@SnackPosition.TopCenter" @ref="_enqueuedSnackbars"></PEnqueuedSnackbars>
 <MCard Tile="@(_GlobalConfig.NavigationStyle != NavigationStyles.Rounded)">
     <MRow NoGutters>
         <MCol Md="12">
             <MRow>
                 <MCol Align="@AlignTypes.Center" class="ml-4">
                     @*<PBlockText Primary="账号:"></PBlockText>*@
-                    <MTextField TValue="string" Label="@T("Position Name")" @bind-Value="input.Name"></MTextField>
+                    <MTextField TValue="string" Label="@T("Position Name")" @bind-Value="_name" Clearable></MTextField>
                 </MCol>
                 <MCol Align="@AlignTypes.Center">
                     @*<PBlockText Primary="手机号码:"></PBlockText>*@
-                    <MTextField TValue="string" Label="@T("Position Code")" @bind-Value="input.Code"></MTextField>
+                    <MTextField TValue="string" Label="@T("Position Code")" @bind-Value="_code" Clearable></MTextField>
                 </MCol>
                 <MCol Align="@AlignTypes.Center">
-                    <MButton Depressed>@T("Reset")</MButton>
-                    <MButton Depressed>@T("Add")</MButton>
-                    <MButton Depressed>@T("Query")</MButton>
+                    <MButton Depressed OnClick="ResetOnClick">@T("Reset")</MButton>
+                    <MButton Depressed OnClick="AddPosOnClick">@T("Add")</MButton>
+                    <MButton Depressed OnClick="QueryOnClick">@T("Query")</MButton>
                 </MCol>
             </MRow>
             <MRow>
                 <MCol Cols="12">
-                    <MDataTable Headers="_headers" Items="_sysPosList" TItem="SysPos" HideDefaultFooter Class="elevation-1" Style="width: 100%;height:calc(100vh - 240px);overflow-y:auto;" Loading="_isLoading">
+                    <MDataTable Headers="_headers" Items="_sysPosList" TItem="SysPos" HideDefaultFooter Class="elevation-1" ItemsPerPage="100" Style="width: 100%;height:calc(100vh - 240px);overflow-y:auto;" Loading="_isLoading">
                         <HeaderColContent Context="header">
                             <span class="text-subtitle">@header.Text</span>
                         </HeaderColContent>
@@ -44,10 +45,14 @@
                                         color = "green";
                                     }
                                     IEnumerable<BlockTextTag> tags = new List<BlockTextTag>()
-                            {
-                            new(status, color,"white"),
-                            };
+                                    {
+                                    new(status, color,"white"),
+                                    };
                                     <PBlockText Tags="@tags" class="custom-pblocktext"></PBlockText>
+                                    break;
+                                case "Action":
+                                    <MIcon OnClick="()=>EditPosOnClick(context.Item)">mdi-pencil</MIcon>
+                                    <MIcon OnClick="()=>DltPosOnClick(context.Item)">mdi-delete</MIcon>
                                     break;
                                 default:
                                     @context.Value
@@ -61,10 +66,102 @@
     </MRow>
 </MCard>
 
+
+<MDialog @bind-Value="_dialog" MaxWidth="850" Scrollable>
+    <MCard Tile="@(_GlobalConfig.NavigationStyle != NavigationStyles.Rounded)">
+        <MCardTitle>
+            <PBlockText>
+                <PrimaryContent>
+                    <MIcon>mdi mdi-square-edit-outline</MIcon>
+                    @_dialogTitle
+                </PrimaryContent>
+            </PBlockText>
+        </MCardTitle>
+
+        <MCardText>
+            <MRow>
+                <MCol Cols="12">
+                    <MRow>
+                        <MCol Cols="2"><MSubheader Style="padding:0px;"><span style="color:red;">*</span>职位名称:</MSubheader></MCol>
+                        <MCol Cols="10"><MTextField TValue="string" Style="margin:2px;" @bind-Value="@_updateInput.Name" Placeholder="请输入机构名称" HideDetails="@("auto")" Outlined Clearable Dense></MTextField></MCol>
+                    </MRow>
+                </MCol>
+            </MRow>
+            <MRow>
+                <MCol Cols="12">
+                    <MRow>
+                        <MCol Cols="2"><MSubheader Style="padding:0px;"><span style="color:red;">*</span>职位编码:</MSubheader></MCol>
+                        <MCol Cols="10"><MTextField TValue="string" Style="margin:2px;" @bind-Value="@_updateInput.Code" Placeholder="请输入机构编码" HideDetails="@("auto")" Outlined Clearable Dense></MTextField></MCol>
+                    </MRow>
+                </MCol>
+            </MRow>
+            <MRow>
+                <MCol Cols="6">
+                    <MRow>
+                        <MCol Cols="3"><MSubheader Style="padding:0px;">级别:</MSubheader></MCol>
+                        <MCol Cols="9">
+                            <MTextField @bind-Value="@_updateInput.OrderNo"
+                                        PrependIcon="mdi mdi-minus"
+                                        AppendOuterIcon="mdi mdi-plus"
+                                        OnPrependClick="()=>_updateInput.OrderNo--"
+                                        OnAppendOuterClick="()=>_updateInput.OrderNo++"
+                                        TValue="int"
+                                        Style="text-align: center"
+                                        class="centered-text"
+                                        Placeholder="排序"
+                                        Outlined
+                                        Dense />
+                        </MCol>
+                    </MRow>
+                </MCol>
+                <MCol Cols="6">
+                    <MRow>
+                        <MCol Cols="3"><MSubheader Style="padding:0px;">状态:</MSubheader></MCol>
+                        <MCol Cols="9">
+                            <MRadioGroup @bind-Value="_updateInput.Status" Style="margin:8px;" Row Dense>
+                                <MRadio Label="@T("Enable")" Value="@(StatusEnum.Enable)"></MRadio>
+                                <MRadio Label="@T("Disable")" Value="@(StatusEnum.Disable)"></MRadio>
+                            </MRadioGroup>
+                        </MCol>
+                    </MRow>
+                </MCol>
+            </MRow>
+            <MRow>
+                <MCol Cols="12">
+                    <MRow>
+                        <MCol Cols="2"><MSubheader Style="padding:0px;">备注:</MSubheader></MCol>
+                        <MCol Cols="10"><MTextField TValue="string" Style="margin:2px;" @bind-Value="@_updateInput.Remark" Placeholder="请输入备注" HideDetails="@("auto")" Outlined Clearable Dense></MTextField></MCol>
+                    </MRow>
+                </MCol>
+            </MRow>
+        </MCardText>
+
+        <MCardActions>
+            <MSpacer></MSpacer>
+
+            <MButton Color="green darken-1"
+                     Text
+                     OnClick="()=> _dialog = false">
+                取消
+            </MButton>
+
+            <MButton Color="error"
+                     Text
+                     OnClick="SubmitOnClick">
+                确认
+            </MButton>
+        </MCardActions>
+    </MCard>
+</MDialog>
+
 <style>
     .custom-pblocktext span {
         padding: 4px !important;
         height: 26px !important;
         font-size: 16px !important;
+    }
+
+    .centered-text input {
+        text-align: center;
     }
 </style>

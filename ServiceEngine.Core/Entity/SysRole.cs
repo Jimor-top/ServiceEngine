@@ -20,7 +20,6 @@ public class SysRole : EntityTenant
     [SugarColumn(ColumnDescription = "编码", Length = 64)]
     [MaxLength(64)]
     [Required(ErrorMessage = "角色编码不能为空")]
-    [RegularExpression("True", ErrorMessage = "角色编码不能为空")]
     public string? Code { get; set; }
 
     /// <summary>

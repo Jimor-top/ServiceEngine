@@ -7,6 +7,13 @@ namespace ServiceEngineMasaCore.Blazor.Service.Notice.Interface
 {
     public interface ISysNoticeService
     {
-        Task<AdminResult<SqlSugarPagedList<SysNotice>>> GetSysNoticePageAsynct([JsonContent] PNoticeInput input);
+        Task<AdminResult<SqlSugarPagedList<SysNotice>>> GetSysNoticePageAsync(PNoticeInput input);
+        Task<AdminResult<object>> PublicSysNoticeAsync(NotiInput input);
+        Task<AdminResult<object>> SetReadSysNoticeAsync(NotiInput input);
+        Task<AdminResult<SqlSugarPagedList<SysNoticeUser>>> ReceivedSysNoticeAsync(PNoticeInput input);
+        Task<AdminResult<List<SysNotice>>> UnReadSysNoticeAsync();
+        Task<AdminResult<object>> AddSysNoticeAsync(AddNoticeInput input);
+        Task<AdminResult<object>> UpdateSysNoticeAsync(UpdateNoticeInput input);
+        Task<AdminResult<object>> DeleteSysNoticeAsync(NotiInput input);
     }
 }

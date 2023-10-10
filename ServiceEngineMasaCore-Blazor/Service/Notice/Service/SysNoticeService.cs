@@ -13,7 +13,28 @@ namespace ServiceEngineMasaCore.Blazor.Service.Notice.Service
         public SysNoticeService(INoticeClient clinet, IPopupService popup) : base(popup)
             => _client = clinet;
 
-        public Task<AdminResult<SqlSugarPagedList<SysNotice>>> GetSysNoticePageAsynct([JsonContent] PNoticeInput input)
-            => HandleErrorAsync(_client.GetSysNoticePageAsynct(input));
+        public Task<AdminResult<object>> AddSysNoticeAsync(AddNoticeInput input)
+            => HandleErrorAsync(_client.AddSysNoticeAsync(input));
+
+        public Task<AdminResult<object>> DeleteSysNoticeAsync(NotiInput input)
+            => HandleErrorAsync(_client.DeleteSysNoticeAsync(input));
+
+        public Task<AdminResult<SqlSugarPagedList<SysNotice>>> GetSysNoticePageAsync(PNoticeInput input)
+            => HandleErrorAsync(_client.GetSysNoticePageAsync(input));
+
+        public Task<AdminResult<object>> PublicSysNoticeAsync(NotiInput input)
+            => HandleErrorAsync(_client.PublicSysNoticeAsync(input));
+
+        public Task<AdminResult<SqlSugarPagedList<SysNoticeUser>>> ReceivedSysNoticeAsync(PNoticeInput input)
+            => HandleErrorAsync(_client.ReceivedSysNoticeAsync(input));
+
+        public Task<AdminResult<object>> SetReadSysNoticeAsync(NotiInput input)
+            => HandleErrorAsync(_client.SetReadSysNoticeAsync(input));
+
+        public Task<AdminResult<List<SysNotice>>> UnReadSysNoticeAsync()
+            => HandleErrorAsync(_client.UnReadSysNoticeAsync());
+
+        public Task<AdminResult<object>> UpdateSysNoticeAsync(UpdateNoticeInput input)
+            => HandleErrorAsync(_client.UpdateSysNoticeAsync(input));
     }
 }

@@ -26,3 +26,7 @@
     .blazor-error-boundary::after {
         content: "An error has occurred."
     }
+
+element.style {
+    padding-inline-end: 5px !important;
+}

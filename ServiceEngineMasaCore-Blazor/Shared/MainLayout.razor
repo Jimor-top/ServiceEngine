@@ -1,5 +1,6 @@
 ﻿@using System.Globalization
 @using System.Runtime.InteropServices
+@using ServiceEngineMasaCore.Blazor.Pages.Components
 @inherits LayoutComponentBase
 @inject GlobalConfig GlobalConfig
 
@@ -14,7 +15,8 @@
                             <MSpacer />
                             @*<Search />*@
                             <MIcon Size=20 Class="ml-5" Color="neutral-lighten-3" OnClick="() => ToggleFullscreen()">mdi-fullscreen</MIcon>
-                            <MIcon Size=20 Class="ml-5" Color="neutral-lighten-3">mdi-message-processing-outline</MIcon>
+                            <MNoticeMessage></MNoticeMessage>
+                            @*<MIcon Size=20 Class="ml-5" Color="neutral-lighten-3">mdi-message-processing-outline</MIcon>*@
                             <MIcon Size=20 Class="ml-5" Color="neutral-lighten-3" OnClick="() => _showSetting = true">mdi-cog-outline</MIcon>
                             <Language OnLanguageChanged="OnLanguageChanged" />
                             <Login />

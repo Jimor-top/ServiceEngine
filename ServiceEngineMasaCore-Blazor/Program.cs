@@ -1,5 +1,6 @@
 using ServiceEngineMasaCore.Blazor.Extensions;
 using ServiceEngineMasaCore.Blazor.Data;
+using Microsoft.AspNetCore.SignalR;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -23,7 +24,6 @@ if (string.IsNullOrWhiteSpace(apiBaseAddress))
     apiBaseAddress = "http://localhost:5005";
 }
 builder.Services.RegisterAppServices(apiBaseAddress);
-
 
 var app = builder.Build();
 

@@ -105,7 +105,7 @@ namespace ServiceEngineMasaCore.Blazor.Pages.App.SystemManagement
                 _userInput.RoleIdList = new List<long>();
                 _userInput.ExtOrgIdList = new List<SysUserExtOrg>();
                 SwitchToggledCallback = EventCallback.Factory.Create<bool>(this, OnSwitchChange);
-                var res = await _sysOrgService.GetSysOrgList(0, "", "", "");
+                var res = await _sysOrgService.GetSysOrgListAsync(0, "", "", "");
                 if (res != null && res.Result != null)
                 {
                     _sysOrgList = res.Result;

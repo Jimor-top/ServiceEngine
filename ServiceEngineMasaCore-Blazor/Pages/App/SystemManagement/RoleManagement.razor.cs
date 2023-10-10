@@ -1,5 +1,6 @@
 ﻿using Masa.Blazor.Presets;
 using Nest;
+using NewLife.Xml;
 using Newtonsoft.Json;
 using ServiceEngine.Core;
 using ServiceEngine.Core.Service;
@@ -85,17 +86,35 @@ namespace ServiceEngineMasaCore.Blazor.Pages.App.SystemManagement
                 _popupService.ShowProgressLinear();
                 _updateRoleInput.MenuIdList = new List<long>();
 
-               var res = await _sysOrgService.GetSysOrgList(0, "", "", "");
+                Task[] tasks = new Task[] {
+                    _sysOrgService.GetSysOrgListAsync(0, "", "", ""),
+                    _sysMenuService.GetSysMenuListAsync(null, null),
+                    _sysRoleService.GetSysRolePageAsync(input)
+                };
+
+                await Task.WhenAll(tasks);
+
+                var res = await (Task<AdminResult<List<SysOrg>>>)tasks[0];
                 if (res != null && res.Result != null)
                 {
                     _sysOrgList = res.Result;
                 }
-                var res1 = await _sysMenuService.GetSysMenuListAsync(null, null);
+                var res1 = await (Task<AdminResult<List<SysMenu>>>)tasks[1];
                 if (res1 != null && res1.Result != null) {
                     _sysMenu = res1.Result;
                     ChackChildCount(_sysMenu);
                 }
-                await LoadData();
+                var res2 = await (Task<AdminResult<SqlSugarPagedList<SysRole>>>)tasks[2];
+                if (res2 != null && res2.Result?.Items != null)
+                {
+                    _tatolPage = res2.Result.TotalPages == 0 ? 1 : res2.Result.TotalPages;
+                    _tatolCount = res2.Result.Total;
+                    _sysRoleList = res2.Result.Items.ToList();
+                    _sysRoleList = _sysRoleList.Select((item, index) => {
+                        item.Index = index + 1;
+                        return item;
+                    }).ToList();
+                }
                 _popupService.HideProgressLinear();
                 _isLoading = false;
                 StateHasChanged();
@@ -153,9 +172,10 @@ namespace ServiceEngineMasaCore.Blazor.Pages.App.SystemManagement
             _name = null;
             _code = null;
         }
-        private async Task AddRoleOnClick() {
+        private void AddRoleOnClick() {
             _dialogTitle = "添加角色";
             _updateRoleInput = new UpdateRoleInput();
+            _updateRoleInput.MenuIdList = new List<long>();
             _dialog = true;
         }
         private async Task QueryOnClick()
@@ -192,19 +212,47 @@ namespace ServiceEngineMasaCore.Blazor.Pages.App.SystemManagement
             _dialog = true;
         }
         private async Task SubmitOnClick() {
-            if (_dialogTitle.Equals("授权数据范围")) {
+            if (_dialogTitle.Equals("授权数据范围"))
+            {
                 var res = await _sysRoleService.SysRoleGrantDataScopeAsync(_dataScopeRoleInput);
-                if (res != null && res.Code == 200) 
+                if (res != null && res.Code == 200)
                     Enqueue(true, "授权数据范围修改成功");
                 else
                     Enqueue(false, "授权数据范围修改失败");
                 var role = _sysRoleList.Where(i => i.Id == _dataScopeRoleInput.Id).FirstOrDefault();
-                if(role != null)
+                if (role != null)
                 {
                     role.DataScope = (DataScopeEnum)_dataScopeRoleInput.DataScope;
                 }
-                _dialog = false;
             }
+            else if (_dialogTitle.Equals("编辑角色")) 
+            {
+                var res = await _sysRoleService.UpdateSysRoleAsync(_updateRoleInput);
+                if (res != null && res.Code == 200) { 
+                    Enqueue(true, "角色修改成功");
+                    for (int i = 0; i < _sysRoleList.Count; i++)
+                    {
+                        if (_sysRoleList[i].Id == _updateRoleInput.Id) {
+                            _sysRoleList[i] = _updateRoleInput;
+                            break;
+                        }
+                    }
+                }
+                else 
+                    Enqueue(false, "角色修改失败");
+            }
+            else if (_dialogTitle.Equals("添加角色")) 
+            {
+                var res = await _sysRoleService.AddSysRoleAsync(_updateRoleInput);
+                if (res != null && res.Code == 200) { 
+
+                    Enqueue(true, "角色添加成功");
+                    _sysRoleList.Add(_updateRoleInput);
+                }
+                else
+                    Enqueue(false, "角色添加失败");
+            }
+            _dialog = false;
         }
         private async Task DltRoleOnClick(SysRole role) {
             var confirmed = await _popupService.ConfirmAsync(param =>

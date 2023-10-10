@@ -32,6 +32,7 @@ public class SingleFilePublish : ISingleFilePublish
             "ServiceEngine.Application",
             "ServiceEngine.Core",
             "ServiceEngine.Plugin.GoView",
+            "ServiceEngine.Web.Core"
         };
     }
 }

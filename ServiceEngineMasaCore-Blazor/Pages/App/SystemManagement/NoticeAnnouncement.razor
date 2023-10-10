@@ -5,38 +5,99 @@
 @inherits ProComponentBase
 @inject GlobalConfig _GlobalConfig
 
+<PEnqueuedSnackbars Closeable=true Position="@SnackPosition.TopCenter" @ref="_enqueuedSnackbars"></PEnqueuedSnackbars>
 <MCard Tile="@(_GlobalConfig.NavigationStyle != NavigationStyles.Rounded)">
     <MRow NoGutters>
         <MCol Md="12">
             <MRow>
                 <MCol Align="@AlignTypes.Center" class="ml-4">
                     @*<PBlockText Primary="账号:"></PBlockText>*@
-                    <MTextField TValue="string" Label="@T("Title")"></MTextField>
+                    <MTextField TValue="string" Label="@T("Title")" @bind-Value="_title" Clearable></MTextField>
                 </MCol>
                 <MCol Align="@AlignTypes.Center">
                     @*<PBlockText Primary="手机号码:"></PBlockText>*@
-                    <MTextField TValue="string" Label="@T("Type")"></MTextField>
+                    <MSelect @bind-Value="_type"
+                             Items="_typeList"
+                             TItem="NoticeTypeEnum"
+                             TItemValue="NoticeTypeEnum"
+                             TValue="NoticeTypeEnum?"
+                             ItemValue="r=>r"
+                             ItemText="r=>r.GetDescription()"
+                             Label="@T("Type")"
+                             Clearable
+                             Placeholder="请选择通知类型">
+                    </MSelect>
                 </MCol>
                 <MCol Align="@AlignTypes.Center">
-                    <MButton Depressed>@T("Reset")</MButton>
-                    <MButton Depressed>@T("Add")</MButton>
-                    <MButton Depressed>@T("Query")</MButton>
+                    <MButton Depressed OnClick="ResetOnClick">@T("Reset")</MButton>
+                    <MButton Depressed OnClick="AddNotiOnClick">@T("Add")</MButton>
+                    <MButton Depressed OnClick="QueryOnClick">@T("Query")</MButton>
                 </MCol>
             </MRow>
             <MRow>
                 <MCol Cols="12">
-                    <MDataTable Headers="_headers" Items="_sysNoticeList" TItem="SysNotice" HideDefaultFooter Class="elevation-1" Style="width: 100%;height:calc(100vh - 280px);overflow-y:auto;" ItemsPerPage="100" Loading="_isLoading">
+                    <MDataTable Headers="_headers" Context="rowContent" Items="_sysNoticeList" TItem="SysNotice" HideDefaultFooter Class="elevation-1" Style="width: 100%;height:calc(100vh - 280px);overflow-y:auto;" ItemsPerPage="100" Loading="_isLoading">
                         <HeaderColContent Context="header">
                             <span class="text-subtitle">@header.Text</span>
                         </HeaderColContent>
                         <ItemColContent>
-                            @switch (context.Header.Value)
+                            @switch (rowContent.Header.Value)
                             {
                                 case nameof(SysNotice.Index):
-                                    <span>@context.Item.Index</span>
+                                    <span>@rowContent.Item.Index</span>
+                                    break;
+                                case nameof(SysNotice.Content):
+                                    string content = @RemoveHtmlTags(@rowContent.Item.Content);
+                                    if (content.Length > 30)
+                                    {
+                                        <MTooltip Bottom>
+                                            <ActivatorContent>
+                                            <span @attributes="@context.Attrs">@content.Substring(0, 30)...</span>
+                                            </ActivatorContent>
+                                            <ChildContent>
+                                                <span>@content</span>
+                                            </ChildContent>
+                                        </MTooltip>
+                                    }
+                                    else
+                                    {
+                                        <span>@content</span>
+                                    }
+                                    break;
+                                case nameof(SysNotice.Type):
+                                    var typeColor = "red";
+                                    if (rowContent.Item.Type == NoticeTypeEnum.ANNOUNCEMENT)
+                                    {
+                                        typeColor = "orange";
+                                    }
+                                    IEnumerable<BlockTextTag> typeTag = new List<BlockTextTag>()
+                                    {
+                            new(rowContent.Item.Type.GetDescription(), typeColor,"white"),
+                                    };
+                                    <PBlockText Tags="@typeTag" class="custom-pblocktext"></PBlockText>
+                                    break;
+                                case nameof(SysNotice.Status):
+                                    string status = "未发布";
+                                    string statusColor = "orange";
+                                    if (rowContent.Item.Status == NoticeStatusEnum.PUBLIC)
+                                    {
+                                        status = "已发布";
+                                        statusColor = "grey";
+                                    }
+                                    IEnumerable<BlockTextTag> statusTag = new List<BlockTextTag>()
+                                    {
+                                        new(status,statusColor ,"white"),
+                                    };
+                                    <PBlockText Tags="@statusTag" class="custom-pblocktext"></PBlockText>
+                                    break;
+                                case "Action":
+                                    bool disable = @rowContent.Item.Status == NoticeStatusEnum.PUBLIC;
+                                    <MIcon OnClick="()=>PublishNoticeOnClick(rowContent.Item)" Disabled="disable">mdi-send-circle</MIcon>
+                                    <MIcon OnClick="()=>EditNoticeOnClick(rowContent.Item)" Disabled="disable">mdi-pencil</MIcon>
+                                    <MIcon OnClick="()=>DltNoticeOnClick(rowContent.Item)">mdi-delete</MIcon>
                                     break;
                                 default:
-                                    @context.Value
+                                    @rowContent.Value
                                     break;
                             }
                         </ItemColContent>
@@ -61,6 +122,77 @@
     </MRow>
 </MCard>
 
+<MDialog @bind-Value="_dialog" MaxWidth="850" Scrollable>
+    <MCard Tile="@(_GlobalConfig.NavigationStyle != NavigationStyles.Rounded)">
+        <MCardTitle>
+            <PBlockText>
+                <PrimaryContent>
+                    <MIcon>mdi mdi-square-edit-outline</MIcon>
+                    @_dialogTitle
+                </PrimaryContent>
+            </PBlockText>
+        </MCardTitle>
+
+        <MCardText>
+            <MRow>
+                <MCol Cols="6">
+                    <MRow>
+                        <MCol Cols="3"><MSubheader Style="padding:0px;">标题:</MSubheader></MCol>
+                        <MCol Cols="9">
+                            <MTextField TValue="string" Style="margin:2px;" @bind-Value="@_updateNoticeInput.Title" Placeholder="请输入标题" HideDetails="@("auto")" Outlined Clearable Dense></MTextField>
+                        </MCol>
+                    </MRow>
+                </MCol>
+                <MCol Cols="6">
+                    <MRow>
+                        <MCol Cols="3"><MSubheader Style="padding:0px;">类型:</MSubheader></MCol>
+                        <MCol Cols="9">
+                            <MSelect @bind-Value="_updateNoticeInput.Type"
+                                     Items="_typeList"
+                                     TItem="NoticeTypeEnum"
+                                     TItemValue="NoticeTypeEnum"
+                                     TValue="NoticeTypeEnum"
+                                     ItemValue="r=>r"
+                                     ItemText="r=>r.GetDescription()"
+                                     Clearable
+                                     Outlined
+                                     Dense
+                                     Style="margin:2px;"
+                                     Placeholder="请选择通知类型">
+                            </MSelect>
+                        </MCol>
+                    </MRow>
+                </MCol>
+            </MRow>
+            <MRow>
+                <MCol Cols="12">
+                    <MRow>
+                        <MCol Cols="1"><MSubheader Style="padding:0px;"><span style="color:red;">*</span>内容:</MSubheader></MCol>
+                        <MCol Cols="11">
+                            <MEditor ContentStyle="height:200px" @bind-Value="_updateNoticeInput.Content"></MEditor>
+                        </MCol>
+                    </MRow>
+                </MCol>
+            </MRow>
+        </MCardText>
+
+        <MCardActions>
+            <MSpacer></MSpacer>
+
+            <MButton Color="green darken-1"
+                     Text
+                     OnClick="()=> _dialog = false">
+                取消
+            </MButton>
+
+            <MButton Color="error"
+                     Text
+                     OnClick="SubmitOnClick">
+                确认
+            </MButton>
+        </MCardActions>
+    </MCard>
+</MDialog>
 <style>
     .custom-pblocktext span {
         padding: 4px !important;

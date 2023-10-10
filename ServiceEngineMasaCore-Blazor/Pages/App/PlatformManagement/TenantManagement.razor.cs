@@ -1,4 +1,5 @@
-﻿using ServiceEngine.Core;
+﻿using Nest;
+using ServiceEngine.Core;
 using ServiceEngine.Core.Service;
 using ServiceEngineMasaCore.Blazor.Service.Log.Dto;
 using ServiceEngineMasaCore.Blazor.Service.Role.Dto;
@@ -22,10 +23,18 @@ namespace ServiceEngineMasaCore.Blazor.Pages.App.PlatformManagement
         List<TenantOutput> _sysTenantList = new List<TenantOutput>();
         PTenantInput input = new PTenantInput();
 
+        string _name = string.Empty;
+        string _phone = string.Empty;
+
         int _tatolCount = 0;
         int _tatolPage = 1;
         int _currentPage = 1;
         private string _paginationSelect = "10";
+
+        private bool _dialog { get; set; }
+        private string _dialogTitle { get; set; } = string.Empty;
+
+        UpdateTenantInput updateTenantInput = new UpdateTenantInput();
 
         bool _isLoading = false;
         readonly List<DataTableHeader<TenantOutput>> _headers = new List<DataTableHeader<TenantOutput>>()
@@ -41,6 +50,7 @@ namespace ServiceEngineMasaCore.Blazor.Pages.App.PlatformManagement
             new() { Text = "排序", Value = nameof(TenantOutput.OrderNo) },
             new() { Text = "修改时间", Value = nameof(TenantOutput.UpdateTime) },
             new() { Text = "备注", Value = nameof(TenantOutput.Remark) },
+            new() { Text = "操作", Value = "Action", Sortable = false, Align=DataTableHeaderAlign.Center }
         };
         protected override async Task OnAfterRenderAsync(bool firstRender)
         {
@@ -49,20 +59,22 @@ namespace ServiceEngineMasaCore.Blazor.Pages.App.PlatformManagement
                 _GlobalConfig.NavigationStyleChanged += NavigationStyleChanged;
                 _isLoading = true;
                 _popupService.ShowProgressLinear();
-                input = new()
-                {
-                    Page = 1,
-                    PageSize = int.Parse(_paginationSelect),
-                };
-                await LoadData(input);
+                await LoadData();
                 _popupService.HideProgressLinear();
                 StateHasChanged();
             }
             await base.OnAfterRenderAsync(firstRender);
         }
 
-        private async Task LoadData(PTenantInput input)
+        private async Task LoadData()
         {
+            input = new()
+            {
+                Page = _currentPage,
+                PageSize = int.Parse(_paginationSelect),
+                Name = _name,
+                Phone = _phone
+            };
             var res = await _sysTenantService.GetSysTenantPageAsync(input);
             if (res != null && res.Result?.Items != null)
             {
@@ -84,23 +96,44 @@ namespace ServiceEngineMasaCore.Blazor.Pages.App.PlatformManagement
         private async Task OnPaginationValueChange(int value)
         {
             _currentPage = value;
-            input = new()
-            {
-                Page = value,
-                PageSize = int.Parse(_paginationSelect),
-            };
-            await LoadData(input);
+            await LoadData();
         }
         private async Task OnSelectValueChange(string value)
         {
             _paginationSelect = value;
             _currentPage = 1;
-            input = new()
-            {
-                Page = 1,
-                PageSize = int.Parse(value),
-            };
-            await LoadData(input);
+            await LoadData();
+        }
+
+        private void ResetOnClick()
+        {
+            _name = string.Empty;
+            _phone = string.Empty;
+        }
+        private void AddPosOnClick()
+        {
+            _dialog = true;
+            _dialogTitle = "添加租户";
+        }
+        private async Task QueryOnClick()
+        {
+            _currentPage = 1;
+            await LoadData();
+        }
+        private async Task EditTenantOnClick(TenantOutput tenant) {
+            _dialog = true;
+            _dialogTitle = "编辑租户";
+        }
+        private async Task GrantMenuOnClick(TenantOutput tenant) { 
+            
+        }
+        private async Task ResetPwdOnClick(TenantOutput tenant)
+        {
+
+        }
+        private async Task DltTenantOnClick(TenantOutput tenant)
+        {
+
         }
         public void Dispose()
         {
